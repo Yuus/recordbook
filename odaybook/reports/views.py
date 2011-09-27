@@ -341,9 +341,6 @@ def report_marks(request, mode = 'all'):
         grades = set(grades)
         if len(grades) == 0:
             raise Http404()
-        elif len(grades) == 1:
-            grades = None
-            grade = Grade.objects.get(id = grades[0])
         else:
             grades = Grade.objects.filter(id__in = grades)
 
