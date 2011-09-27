@@ -19,7 +19,7 @@
 		<tr class="{% cycle 'gray' '' %}">
 			<td>{{ object.key_ru }}</td>
 			<td>{{ object.value }}</td>
-			<td><a href="edit/{{ object.id }}/">редактировать</a></td>
+			<td><a href="edit/{{ object.id }}/" title="редактировать"><img src="{{ MEDIA_URL }}/images/edit.png"/></a></td>
 		</tr>
 	{% empty %}
 		<tr><td colspan="3">Опций нет</td></tr>

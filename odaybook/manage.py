@@ -2,7 +2,7 @@
 
 import sys
 import os
-activate_this = os.path.dirname(os.path.abspath(__file__)) + '/.env/bin/activate_this.py'
+activate_this = os.path.dirname(os.path.abspath(__file__)) + '/../.env/bin/activate_this.py'
 execfile(activate_this, dict(__file__=activate_this))
 
 from django.core.management import execute_manager

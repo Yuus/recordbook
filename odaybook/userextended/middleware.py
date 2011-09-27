@@ -84,5 +84,6 @@ class AdminPeepingMiddleware(object):
             user = request.COOKIES.get('zombie')
             user = get_object_or_404(Clerk, id = user)
             if not user.current_role:
-                user.current_role = user.roles.all()[0]
+                if user.roles.all():
+                    user.current_role = user.roles.all()[0]
             request.user = user.get_current_role()

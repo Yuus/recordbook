@@ -96,6 +96,7 @@
             {% for notify in notifies %}
             <div class="message">
                 <p>
+                    Пользователь
                     {% if notify.type == '1' %}
                         {% if notify.get_timedelta %}
                             {{ notify.user.fio }} {{ notify.get_timedelta.days }} дней не заполнял дневник.
