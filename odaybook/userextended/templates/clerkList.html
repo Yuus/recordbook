@@ -80,13 +80,13 @@
                 {% if object|has_role:"Superuser" %}
 
                 {% else %}
-                    <a href="set/{{ object.id }}/?set_right=Superuser">администратор</a><br />
+                    <a href="set/{{ object.id }}/?right=Superuser">администратор</a><br />
                 {% endif %}
 
                 {% if object|has_role:"Superviser" %}
 
                 {% else %}
-                    <a href="set/{{ object.id }}/?set_right=Superviser">специалист УОН</a><br />
+                    <a href="set/{{ object.id }}/?right=Superviser">специалист УОН</a><br />
                 {% endif %}
                 <a href="#" onclick="$('#dialog').dialog('open'); user_id = {{ object.id }};return false;">администратор школы</a><br />
             </td>
