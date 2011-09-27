@@ -37,7 +37,7 @@ class LazyUser(object):
                     userprofile.last_login = datetime.datetime.now()
                     if userprofile.type == 'Teacher':
                         Notify.objects.filter(type = '2', user = userprofile).delete()
-                        if not userprofile.current_grade and userprofile.grades:
+                        if not userprofile.current_grade and userprofile.grades.all():
                             userprofile.current_grade = userprofile.grades.all()[0]
                     userprofile.save()
                 except Clerk.DoesNotExist:
