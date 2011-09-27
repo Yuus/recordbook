@@ -1,6 +1,5 @@
 {%  load formater %}
-{{ request.user.current_grade }}
-{% if  request.user.current_grade.get_pupils_for_teacher_and_subject %}
+{% if user.current_grade %}
     {%  main_menu_block 'Оценки' '/marks/' '' CM 'marks' %}
 {% endif %}
 {% if user.grade %}
