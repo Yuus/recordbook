@@ -87,7 +87,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    #'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
     'odaybook.userextended.middleware.AuthenticationMiddleware',
     'odaybook.userextended.middleware.AdminPeepingMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
@@ -123,7 +123,7 @@ LESSON_NUMBERS = ( ('1', '1'),
                    ('10', '10')
 )
 
-HEALTH_GROUPS = [str(i) for i in range(1, 5)]
+HEALTH_GROUPS = [str(i) for i in range(1, 4)]
 
 PUPIL_ORDER = (
         ('0', u'полноценная семья'),

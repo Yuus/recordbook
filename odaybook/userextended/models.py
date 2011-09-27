@@ -194,6 +194,7 @@ class Grade(models.Model):
                                                                subject = subject,
                                                                value = conn.connection)
             self.pupils = Pupil.objects.filter(id__in = [c.pupil.id for c in pupil_connections])
+        return self.pupils
 
 class Subject(models.Model):
     '''Учебная дисциплина'''

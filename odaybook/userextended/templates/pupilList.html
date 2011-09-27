@@ -5,8 +5,8 @@
     <span>&rarr;</span>
     <h1>Ученики</h1>
     <table><tr style="vertical-align: baseline;"><td>
+        <a href="add/">Создать ученика</a>
 		<a href="connect/">Добавить ученика</a>
-		<a href="add/">Создать ученика</a>
 		<a href="import/">Импорт ученика</a>
 	</td><td style="padding-left: 20px;">
 		{% include 'helpers/search_form.html' %}
@@ -27,7 +27,7 @@
 			<td>{{ object.fio }}</td>
 			{#<td>{{ object.username }}</td>#}
 			<td>{{ object.grade }}</td>
-			<td>{% include "helpers/buttons/edit.html" %}, <a href="exclude/{{ object.id }}/">исключить</a></td>
+			<td>{% include "helpers/buttons/edit.html" %} <a href="exclude/{{ object.id }}/">исключить</a></td>
 	{% endfor %}
 </table>
 {% include "helpers/paginator.html" %}

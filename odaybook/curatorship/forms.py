@@ -17,8 +17,9 @@ class ConnectionForm(forms.ModelForm):
     def __init__(self, grade__school, grade = None, *args, **kwargs):
         super(ConnectionForm, self).__init__(*args, **kwargs)
         kwargs = {'school': grade__school}
+        self.fields['teacher'].queryset = Teacher.objects.filter(**kwargs)
         if grade:
-            self.fields['teacher'].queryset = Teacher.objects.filter(grades = grade, **kwargs)
+            self.fields['teacher'].queryset = self.fields['teacher'].objects.filter(grades = grade, **kwargs)
         self.fields['subject'].queryset = Subject.objects.filter(**kwargs)
         self.fields['grade'].queryset = Grade.objects.filter(**kwargs)
         if grade:
