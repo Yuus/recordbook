@@ -255,7 +255,7 @@ def baseUserObjectEdit(request, mode, filter_id = None, id = 0):
 
     if request.method == 'GET':
 
-        right = request.GET.get('set_right', None)
+        right = request.GET.get('right', None)
         if right not in ['Superuser', 'Superviser', 'EduAdmin', 'Teacher', None]:
             raise Http404
 
