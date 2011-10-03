@@ -538,23 +538,26 @@ def import_grade(request, filter_id):
             grades = []
             rows = csv.reader(form.cleaned_data['file'], delimiter = ';')
             i = 0
-            for row in rows:
-                i += 1
-                if len(row) < 3:
-                    errors.append({'line': i, 'column': 0, 'error': u'недостаточное количество столбцов'})
-                    continue
-                try:
-                    int(row[0])
-                except ValueError:
-                    errors.append({'line': i, 'column': 1, 'error': u'это не число'})
-                    continue
-                try:
-                    row[1], row[2] = row[1].decode('cp1251'), row[2].decode('cp1251')
-                except UnicodeError:
-                    errors.append({'line': i, 'column': 0,
-                                   'error': u'некорректное значение (невозможно определить кодировку)'})
-                    continue
-                grades.append(Grade(number = row[0], long_name = row[1], small_name = row[2], school = school))
+            try:
+                for row in rows:
+                    i += 1
+                    if len(row) < 3:
+                        errors.append({'line': i, 'column': 0, 'error': u'недостаточное количество столбцов'})
+                        continue
+                    try:
+                        int(row[0])
+                    except ValueError:
+                        errors.append({'line': i, 'column': 1, 'error': u'это не число'})
+                        continue
+                    try:
+                        row[1], row[2] = row[1].decode('cp1251'), row[2].decode('cp1251')
+                    except UnicodeError:
+                        errors.append({'line': i, 'column': 0,
+                                       'error': u'некорректное значение (невозможно определить кодировку)'})
+                        continue
+                    grades.append(Grade(number = row[0], long_name = row[1], small_name = row[2], school = school))
+            except csv.Error:
+                pass
             if len(errors) == 0:
                 for grade in grades:
                     grade.save()
@@ -599,54 +602,58 @@ def import_teacher(request, filter_id):
             teachers = []
             rows = csv.reader(form.cleaned_data['file'], delimiter = ';')
             i = 0
-            for row in rows:
-                i += 1
-                if len(row) < 7:
-                    errors.append({'line': i, 'column': 0, 'error': u'неверное количество столбцов'})
-                    continue
-                try:
-                    row = ";".join(row)
-                    row = row.decode('cp1251')
-                except UnicodeError:
-                    errors.append({'line': i, 'column': 0,
-                                   'error': u'некорректное значение (невозможно определить кодировку)'})
-                    continue
-                row = row.split(';')
-                if len(row[0]) < 2 or len(row[1]) < 2 or len(row[2]) < 2:
-                    errors.append({'line': i, 'column': 0, 'error': u'сликшом короткое ФИО'})
-                    continue
-                try:
-                    validate_email(row[3])
-                except ValidationError:
-                    errors.append({'line': i, 'column': 4, 'error': u'email указан неверно'})
-                    continue
-                teacher = Teacher(school = school, last_name = row[0],
-                                  first_name = row[1], middle_name = row[2], email = row[3])
-                teacher._subjects = []
-                t = [j.strip() for j in row[4].split(',')]
-                for sbj in t:
-                    try: teacher._subjects.append(Subject.objects.get(name = sbj, school = school))
-                    except Subject.DoesNotExist: errors.append({'line': i, 'column': 5,
-                                                                'error': u'предмет "%s" не найден' % sbj})
-                teacher._grades = []
-                t = [j.strip() for j in row[5].split(',')]
-                for grade in t:
-                    if not get_grade(grade):
-                        errors.append({'line': i, 'column': 5, 'error': u'класс "%s" не найден' % grade})
-                        continue
-                    try: teacher._grades.append(Grade.objects.get(school = school, **get_grade(grade)))
-                    except Grade.DoesNotExist: errors.append({'line': i, 'column': 5,
-                                                              'error': u'класс "%s" не найден' % grade})
-                if row[6]:
-                    if not get_grade(row[6]):
-                        errors.append({'line': i, 'column': 6, 'error': u'класс "%s" не найден' % row[6]})
+            try:
+                for row in rows:
+                    i += 1
+                    if len(row) < 7:
+                        errors.append({'line': i, 'column': 0, 'error': u'неверное количество столбцов'})
                         continue
                     try:
-                        teacher.grade = Grade.objects.get(school = school, **get_grade(row[6]))
-                    except Grade.DoesNotExist:
-                        errors.append({'line': i, 'column': 6, 'error': u'класс "%s" не найден' % row[6]})
+                        row = ";".join(row)
+                        row = row.decode('cp1251')
+                    except UnicodeError:
+                        errors.append({'line': i, 'column': 0,
+                                       'error': u'некорректное значение (невозможно определить кодировку)'})
                         continue
-                teachers.append(teacher)
+                    row = row.split(';')
+                    if len(row[0]) < 2 or len(row[1]) < 2 or len(row[2]) < 2:
+                        errors.append({'line': i, 'column': 0, 'error': u'сликшом короткое ФИО'})
+                        continue
+                    try:
+                        validate_email(row[3])
+                    except ValidationError:
+                        errors.append({'line': i, 'column': 4, 'error': u'email указан неверно'})
+                        continue
+                    teacher = Teacher(school = school, last_name = row[0],
+                                      first_name = row[1], middle_name = row[2], email = row[3])
+                    teacher._subjects = []
+                    t = [j.strip() for j in row[4].split(',')]
+                    for sbj in t:
+                        try: teacher._subjects.append(Subject.objects.get(name = sbj, school = school))
+                        except Subject.DoesNotExist: errors.append({'line': i, 'column': 5,
+                                                                    'error': u'предмет "%s" не найден' % sbj})
+                    teacher._grades = []
+                    t = [j.strip() for j in row[5].split(',')]
+                    for grade in t:
+                        if not get_grade(grade):
+                            errors.append({'line': i, 'column': 5, 'error': u'класс "%s" не найден' % grade})
+                            continue
+                        try: teacher._grades.append(Grade.objects.get(school = school, **get_grade(grade)))
+                        except Grade.DoesNotExist: errors.append({'line': i, 'column': 5,
+                                                                  'error': u'класс "%s" не найден' % grade})
+                    if row[6]:
+                        if not get_grade(row[6]):
+                            errors.append({'line': i, 'column': 6, 'error': u'класс "%s" не найден' % row[6]})
+                            continue
+                        try:
+                            teacher.grade = Grade.objects.get(school = school, **get_grade(row[6]))
+                        except Grade.DoesNotExist:
+                            errors.append({'line': i, 'column': 6, 'error': u'класс "%s" не найден' % row[6]})
+                            continue
+                    teachers.append(teacher)
+
+            except csv.Error:
+                pass
 
             if len(errors) == 0:
                 for teacher in teachers: 

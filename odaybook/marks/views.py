@@ -9,6 +9,7 @@ from django.core.paginator import Paginator
 from django.conf import settings
 from django.contrib import messages
 
+from odaybook.utils import PlaningError
 from odaybook.userextended.models import Pupil, Subject, Grade
 from odaybook.curatorship.models import Connection
 from odaybook.attendance.models import UsalTimetable
@@ -99,9 +100,14 @@ def index(request):
             else:
                 messages.error(request, u'К вам не привязано классов')
                 return HttpResponseRedirect('/')
-        request.user.current_grade.get_pupils_for_teacher_and_subject(
-                request.user, request.user.current_subject
-        )
+        try:
+            request.user.current_grade.get_pupils_for_teacher_and_subject(
+                    request.user, request.user.current_subject
+            )
+        except PlaningError:
+            # FIXME: нужно пробовать выбирать другой класс
+            messages.error(request, u'В выбранном классе нет учеников')
+            return HttpResponseRedirect('/')
         
         try:
             day, month, year = request.GET.get('date', '').split('.')

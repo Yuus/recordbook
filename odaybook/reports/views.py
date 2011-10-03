@@ -98,6 +98,8 @@ def report_health(request):
     render = {}
 
     total = {'all': 0}
+    for group in settings.HEALTH_GROUPS:
+        total[group] = 0
     rows = Array()
     rows.insert_row()
     rows.append_col('')
@@ -149,6 +151,8 @@ def report_order(request):
     render = {}
 
     total = {'all': 0}
+    for order in settings.PUPIL_ORDER:
+        total[order[0]] = 0
     rows = Array()
     rows.insert_row()
     rows.append_col('')
@@ -167,8 +171,10 @@ def report_order(request):
                                      order = order[0])
             rows.append_col(c.count())
             total[order[0]] = total.get(order[0], 0) + c.count()
-            if all == 0: rows.append_col(0)
-            else: rows.append_col((c.count()/all)*100)
+            if all == 0:
+                rows.append_col(0)
+            else:
+                rows.append_col((c.count()/all)*100)
         rows.append_col(str(all))
 
     rows.insert_row()
