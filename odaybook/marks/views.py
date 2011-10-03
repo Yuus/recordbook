@@ -131,7 +131,7 @@ def index(request):
         if conn.connection != '0':
             kwargs['group'] = conn.connection
 
-        kwargs4lesson = {}
+        kwargs4lesson = {'date': None}
         for i in xrange(14, -1, -1):
             d = date_start - timedelta(days = i)
             kwargs['workday'] = str(d.weekday()+1)
