@@ -12,4 +12,8 @@ from settings_dist import *
 #        'PORT': '',                      # Set to empty string for default. Not used with sqlite3.
 #    }
 #}
+DEFAULT_FROM_EMAIL = 'info@school-record-book.ru'
+EMAIL_HOST = 'mail.bz8.ru'
+EMAIL_HOST_USER = 'komkov_00'
+EMAIL_HOST_PASSWORD = 'lhmKpR1Kwt0'
 

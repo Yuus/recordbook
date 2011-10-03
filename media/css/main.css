@@ -942,3 +942,7 @@ div#content table.no-style > td{
     margin: 0px;
     padding: 0px;
 }
+
+div#content table.form form{
+    margin: 0;
+}

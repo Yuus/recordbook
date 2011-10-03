@@ -370,6 +370,8 @@ def clerkAppendRole(request):
     '''
         Добавление существующего аккаунта к школе.
     '''
+    from django.db.models import Q
+
     render = {}
     render['step'] = request.GET.get('step', '1')
     render['username'] = request.POST.get('username', '')
@@ -378,23 +380,29 @@ def clerkAppendRole(request):
 
     if request.GET.get('step', '1') == '1':
         if request.method == 'POST':
-            try:
-                clerk = Clerk.objects.get(username = request.POST.get('username'))
-            except Clerk.DoesNotExist:
-                render['error'] = u'Пользователя с таким ID не существует.'
+            search_string = request.POST.get('search_string', '')
+            objects = Clerk.objects.filter(
+                Q(last_name__icontains=search_string) |
+                Q(first_name__icontains=search_string) |
+                Q(middle_name__icontains=search_string) |
+                Q(email__icontains=search_string)
+            )
+            school = get_object_or_404(School, id = request.GET.get('school', '0'))
+            objects = filter(lambda clerk: not clerk.has_role('Teacher', school), list(objects))
+            if not objects:
+                render['error'] = u'Ничего не найдено.'
                 return render_to_response('~userextended/clerkAppendRole.html',
                                           render, context_instance = RequestContext(request))
-            if 'Pupil' in clerk.get_roles_list():
-                render['error'] = u'Этот пользователь ученик.'
-                return render_to_response('~userextended/clerkAppendRole.html', render,
-                                          context_instance = RequestContext(request))
-            school = get_object_or_404(School, id = request.GET.get('school', '0'))
-            if clerk.has_role('Teacher', school):
-                render['error'] = u'Этот пользователь уже приписан к данной школе.'
-                return render_to_response('~userextended/clerkAppendRole.html', render,
-                                          context_instance = RequestContext(request))
+#            if 'Pupil' in clerk.get_roles_list():
+#                render['error'] = u'Этот пользователь ученик.'
+#                return render_to_response('~userextended/clerkAppendRole.html', render,
+#                                          context_instance = RequestContext(request))
+#            if clerk.has_role('Teacher', school):
+#                render['error'] = u'Этот пользователь уже приписан к данной школе.'
+#                return render_to_response('~userextended/clerkAppendRole.html', render,
+#                                          context_instance = RequestContext(request))
 
-            render['clerk'] = clerk
+            render['objects'] = objects
 
     elif request.GET.get('step', '1') == '2':
         if request.method == 'POST':

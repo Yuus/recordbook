@@ -6,7 +6,7 @@
     <a href="/administrator/uni/userextended.Teacher/{{ schoolObj.id }}/">Учителя</a>
     <span>&rarr;</span>
     {% if step == '1' %}
-        <h1>Проверка пользователя</h1>
+        <h1>Поиск пользователя</h1>
     {% endif %}
 {% endblock %}
 
@@ -16,20 +16,26 @@
         {% if error %}
             <p>Ошибка: {{ error|lower }}</p>
         {% endif %}
-        {% if clerk %}
-            <form action="?step=2&school={{ school }}" method="POST">
-                <input type="hidden" name="username" value="{{ username }}" />
-                <p>Результат запроса: {{ clerk.fio }}</p>
-                <p>
-                    <input type="submit" value="Добавить пользователя" />
-                </p>
-            </form>
+        {% if objects %}
+            <table class="form">
+                {% for object in objects%}
+                    <tr>
+                        <td>{{ object.fio }}</td>
+                        <td>
+                            <form action="?step=2&school={{ school }}" method="POST">
+                                <input type="hidden" name="username" value="{{ object.username }}" />
+                                <input type="submit" value="Добавить пользователя" />
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </table>
         {% else %}
             <form action="?step=1&school={{ school }}" method="POST">
                 <table>
                     <tr>
-                        <td>Введите имя пользователя</td>
-                        <td><input type="text" name="username" value="{{ username }}" /> </td>
+                        <td>Введите фамилию пользователя</td>
+                        <td><input type="text" name="search_string" value="{{ search_string }}" /> </td>
                     </tr>
                     <tr>
                         <td colspan="2">

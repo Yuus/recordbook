@@ -108,6 +108,9 @@ class School(models.Model):
             for subject in subjects:
                 Subject(school = self, name = subject).save()
 
+    class Meta:
+        ordering = ['name', ]
+
 class Option(models.Model):
     '''
         Модель для указания дополнительных настроек как для школы, так и для системы вцелом.
