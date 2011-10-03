@@ -19,7 +19,7 @@ class ConnectionForm(forms.ModelForm):
         kwargs = {'school': grade__school}
         self.fields['teacher'].queryset = Teacher.objects.filter(**kwargs)
         if grade:
-            self.fields['teacher'].queryset = self.fields['teacher'].queryset.objects.filter(grades = grade, **kwargs)
+            self.fields['teacher'].queryset = self.fields['teacher'].queryset.filter(grades = grade, **kwargs)
         self.fields['subject'].queryset = Subject.objects.filter(**kwargs)
         self.fields['grade'].queryset = Grade.objects.filter(**kwargs)
         if grade:
