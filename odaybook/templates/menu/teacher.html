@@ -1,5 +1,5 @@
 {%  load formater %}
-{% if user.current_grade %}
+{% if user.subjects.all %}
     {%  main_menu_block 'Оценки' '/marks/' '' CM 'marks' %}
 {% endif %}
 {% if user.grade %}

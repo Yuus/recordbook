@@ -31,7 +31,8 @@ class LazyUser(object):
                             userprofile.current_role = userprofile.roles.all()[0]
                             userprofile.save()
                         else:
-                            raise
+                            from django.http import HttpResponseForbidden
+                            return HttpResponseForbidden()
 
                     userprofile = userprofile.get_current_role()
                     userprofile.last_login = datetime.datetime.now()

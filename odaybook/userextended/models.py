@@ -125,7 +125,9 @@ def SystemInitCallback(sender, **kwargs):
         Callback после syncdb для создания заранее существующих настроек.
     '''
     options = [
-        {'key': 'vnc_link', 'key_ru': u'Ссылка на приложение ТП', 'value': ''},
+        {'key': 'vnc_link', 'key_ru': u'Ссылка на приложение ТП'},
+        {'key': 'recaptcha_public_key', 'key_ru': u'ReCAPTCHA публичный ключ'},
+        {'key': 'recaptcha_private_key', 'key_ru': u'ReCAPTCHA приватный ключ'},
     ]
     for option in options:
         Option.objects.get_or_create(**option)
@@ -161,18 +163,6 @@ class Grade(models.Model):
         '''
         return Subject.objects.filter(id__in = [s.id for s in self.get_subjects()])
         
-    def delete(self):
-        if not Pupil.objects.filter(grade = self):
-            for teacher in Teacher.objects.filter(grade = self):
-                teacher.grade = None
-                teacher.save()
-            for teacher in Teacher.objects.filter(grades = self):
-                teacher.grades.remove(self)
-                teacher.save()
-            super(Grade, self).delete()
-        else:
-            raise PlaningError(u"В классе числятся ученики")
-        
     def save(self, *args, **kwargs):
         self.long_name = self.long_name.lower()
         self.small_name = self.small_name.lower()
@@ -200,10 +190,16 @@ class Grade(models.Model):
         return self.pupils
 
     def delete(self, *args, **kwargs):
-        for teacher in Teacher.objects.filter(grades = self):
-            teacher.grades.remove(self)
-            teacher.save()
-        Teacher.objects.filter(grade = self).update(grade = None)
+        if not Pupil.objects.filter(grade = self):
+            for teacher in Teacher.objects.filter(grades = self):
+                teacher.grades.remove(self)
+                teacher.save()
+            Teacher.objects.filter(grade = self).update(grade = None)
+            Teacher.objects.filter(current_grade = self).update(current_grade = None)
+            
+            super(Grade, self).delete()
+        else:
+            raise PlaningError(u"В классе числятся ученики")
 
 class Subject(models.Model):
     '''Учебная дисциплина'''

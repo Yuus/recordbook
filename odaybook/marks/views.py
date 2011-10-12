@@ -41,10 +41,18 @@ def index(request):
 
         if request.GET.get('set_current_grade', False):
             grade = get_object_or_404(Grade,
-                                      id = request.GET.get('set_current_grade'))
+                                      id = request.GET.get('set_current_grade', 0))
             if grade not in request.user.grades.all():
                 raise Http404(u'Нет такого класса')
             request.user.current_grade = grade
+            request.user.save()
+
+        if request.GET.get('set_current_subject', False):
+            subject = get_object_or_404(Subject,
+                                        id = request.GET.get('set_current_subject', 0))
+            if subject not in request.user.subjects.all():
+                raise Http404(u'Нет такого предмета')
+            request.user.current_subject = subject
             request.user.save()
         
         render['lesson_form'] = LessonForm()
@@ -77,12 +85,14 @@ def index(request):
             Mark.objects.filter(pupil = pupil, lesson = lesson).delete()
             m = Mark(pupil = pupil, lesson = lesson)
             tr_id = 'p-%d-%d' % (pupil.id, lesson.id)
-            if mark not in ['1', '2', '3', '4', '5', 'n', u'н', '']:
+            if mark not in ['1', '2', '3', '4', '5', 'n', u'н', '', u'б', u'b']:
                 return HttpResponse(demjson.encode({'id': tr_id, 'mark': 'no'}))
             if mark == '':
                 return HttpResponse(demjson.encode({'id': tr_id, 'mark': ''}))
-            if mark in [u'n', u'н']:
+            if mark in [u'n', u'н', u'b', u'б']:
                 m.absent = True
+                if mark in [u'б', u'b']:
+                    m.sick = True
             else:
                 m.mark = int(mark)
             m.save()
@@ -92,23 +102,21 @@ def index(request):
                                                 'mark_type': m.get_type()
                                                 }, encoding = 'utf-8'))
         
-        from pytils import dt
-        if not request.user.current_grade:
-            if request.user.get_grades():
-                request.user.current_grade = request.user.get_grades()[0]
-                request.user.save()
-            else:
-                messages.error(request, u'К вам не привязано классов')
-                return HttpResponseRedirect('/')
         try:
             request.user.current_grade.get_pupils_for_teacher_and_subject(
                     request.user, request.user.current_subject
             )
         except PlaningError:
-            # FIXME: нужно пробовать выбирать другой класс
             messages.error(request, u'В выбранном классе нет учеников')
-            return HttpResponseRedirect('/')
-        
+            return render_to_response(
+                    '~marks/%s/index.html' % request.user.type.lower(),
+                    render,
+                    context_instance = RequestContext(request))
+
+        if not request.user.get_grades_for_marks():
+            request.user.current_grade = None
+
+        from pytils import dt
         try:
             day, month, year = request.GET.get('date', '').split('.')
             date_start = date(day = day, month = month, year = year)
@@ -126,7 +134,11 @@ def index(request):
         }
         conn = Connection.objects.filter(teacher = request.user, **kwargs)
         if not conn:
-            raise Http404('No connections')
+            messages.error(request, u'Нет связок в выбранном сочетании предмет-класс')
+            return render_to_response(
+                    '~marks/%s/index.html' % request.user.type.lower(),
+                    render,
+                    context_instance = RequestContext(request))
         conn = conn[0]
         if conn.connection != '0':
             kwargs['group'] = conn.connection

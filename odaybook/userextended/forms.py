@@ -7,6 +7,43 @@ from django.contrib.auth.forms import PasswordChangeForm as DjangoPasswordChange
 
 from models import Subject, Teacher, Pupil, Grade, School, Staff, Option, Achievement, Clerk, PupilConnection
 
+class ReCaptcha(forms.widgets.Widget):
+    recaptcha_challenge_name = 'recaptcha_challenge_field'
+    recaptcha_response_name = 'recaptcha_response_field'
+
+    def render(self, name, value, attrs=None):
+        from django.utils.safestring import mark_safe
+        from recaptcha import captcha
+
+        return mark_safe(u'%s' % captcha.displayhtml(Option.objects.get(key='recaptcha_public_key').value))
+
+    def value_from_datadict(self, data, files, name):
+        return [data.get(self.recaptcha_challenge_name, None),
+            data.get(self.recaptcha_response_name, None)]
+
+class ReCaptchaField(forms.CharField):
+    default_error_messages = {
+        'captcha_invalid': u'Неверный код на картинке'
+    }
+
+    def __init__(self, *args, **kwargs):
+        self.widget = ReCaptcha
+        self.required = True
+        super(ReCaptchaField, self).__init__(*args, **kwargs)
+
+    def clean(self, values):
+        from django.utils.encoding import smart_unicode
+        from recaptcha import captcha
+
+        super(ReCaptchaField, self).clean(values[1])
+        recaptcha_challenge_value = smart_unicode(values[0])
+        recaptcha_response_value = smart_unicode(values[1])
+        check_captcha = captcha.submit(recaptcha_challenge_value,
+            recaptcha_response_value, Option.objects.get(key='recaptcha_private_key').value, {})
+        if not check_captcha.is_valid:
+            raise forms.util.ValidationError(self.error_messages['captcha_invalid'])
+        return values[0]
+
 class SubjectForm(forms.ModelForm):
     u'''
         Форма для работы с дисциплинами определнной школы.
@@ -217,6 +254,15 @@ class ClerkRegisterForm(forms.ModelForm):
         self.fields['email'].required = True
         self.fields['last_name'].required = True
         self.fields['first_name'].required = True
+
+        try:
+            recaptcha_private_key = Option.objects.get(key='recaptcha_private_key')
+            recaptcha_public_key = Option.objects.get(key='recaptcha_public_key')
+        except Option.DoesNotExist:
+            recaptcha_private_key = recaptcha_public_key = None
+
+        if recaptcha_private_key and recaptcha_public_key:
+            self.fields['captcha'] = ReCaptchaField(label=u'Введите два слова на картинке')
 
     def clean_email(self):
         u'''

@@ -47,12 +47,12 @@ lesson_id = 0;
 	{% if user.type == 'Teacher'%}
 			<div id="sub-navigation">
 			<div id="padding">
-			{% for subject in subjects %}
-				{% ifequal subject.id user.current_subject.id %}
+			{% for subject in user.subjects.all %}
+				{% if subject == user.current_subject %}
 					<h1>{{ subject.name }}</h1>
 				{% else %}
-					<a href="/marks/set_current_subject/{{ subject.id }}?next={{ next }}">{{ subject.name }}</a>
-				{% endifequal %}
+					<a href="?set_current_subject={{ subject.id }}">{{ subject.name }}</a>
+				{% endif %}
 			{% endfor %}
 			</div>
 			</div>
@@ -74,13 +74,15 @@ lesson_id = 0;
 <table class="table mtable" style="margin-left: 0px;" id="marks">
 	<tr><td style="vertical-align: top;">
 		<table class="table">
-			<thead>
-				<tr>
-					<td>Выберите класс:</td>
-				</tr>
-			</thead>
-			<tbody>
 				{% for gr in user.get_grades_for_marks %}
+                    {% if forloop.first %}
+                        <thead>
+                            <tr>
+                                <td>Выберите класс:</td>
+                            </tr>
+                        </thead>
+                        <tbody>
+                    {% endif %}
 					<tr><td>
 						<ul>
 							<li>
@@ -92,6 +94,8 @@ lesson_id = 0;
                             </li>
 						</ul>
 					</td></tr>
+                {% empty %}
+                    <tr><td><i>К вам не приписано классов с расписанием по данному предмету</i></td></tr>
 				{% endfor %}
 			</tbody>
 		</table>
@@ -99,38 +103,39 @@ lesson_id = 0;
 	<td>
 
 <div id="debug"></div>
-<table class="table table_marks">
-	<thead>
-		<tr>
-			<th style="border: none;"></th>
-			{% for month, value in monthes.items %}
-				<th style="border-bottom: none; border-right: 1px solid; border-left: 1px solid; text-align: center" colspan="{{ value.1 }}">{{ value.0 }}</th>
-			{% endfor %}
-		</tr>
-		<tr>
-		<th></td>
-		{% for lesson in lessons %}
-            {% if lesson.resultdate %}
-                <th>{{ lesson.resultdate }}</th>
-            {% else %}
-                <th><a id="lesson-{{ lesson.id }}" href="#" class="ajax dialog_link{% if not lesson.topic %} red{% endif %}" lesson="{{ lesson.id }}">{{ lesson.date|date:"d" }}</a></th>
-            {% endif %}
-		{% endfor %}
-	</tr></thead>
-	<tbody>
-		{% for pupil in user.current_grade.pupils %}
-			<tr class="{% cycle 'gray' '' %}">
-				<td><nobr>{{ pupil.fi }}</nobr></td>
-				{% for lesson in lessons %}
-					<td class="for-mark" mark="true" pupil="{{ pupil.id }}" lesson="{{ lesson.id }}" left="p-{{ pupil.id }}-{{ lesson|prev_date:lessons }}" right="p-{{ pupil.id }}-{{ lesson|next_date:lessons }}" up="p-{{ pupil|up_pupil:user.current_grade.pupils }}-{{ lesson.id }}" down="p-{{ pupil|down_pupil:user.current_grade.pupils }}-{{ lesson.id }}" next="p-{{ pupil|first_pupil:user.current_grade.pupils }}-{{ lesson|next_date:lessons }}" id="p-{{ pupil.id }}-{{ lesson.id }}">
-						{{ pupil|get_mark:lesson }}
-					</td>
-				{% endfor %}
-			</tr>
-		{% endfor %}
-	</tbody>
-</table>
-
+{% if user.current_grade %}
+    <table class="table table_marks">
+        <thead>
+            <tr>
+                <th style="border: none;"></th>
+                {% for month, value in monthes.items %}
+                    <th style="border-bottom: none; border-right: 1px solid; border-left: 1px solid; text-align: center" colspan="{{ value.1 }}">{{ value.0 }}</th>
+                {% endfor %}
+            </tr>
+            <tr>
+            <th></td>
+            {% for lesson in lessons %}
+                {% if lesson.resultdate %}
+                    <th>{{ lesson.resultdate }}</th>
+                {% else %}
+                    <th><a id="lesson-{{ lesson.id }}" href="#" class="ajax dialog_link{% if not lesson.topic %} red{% endif %}" lesson="{{ lesson.id }}">{{ lesson.date|date:"d" }}</a></th>
+                {% endif %}
+            {% endfor %}
+        </tr></thead>
+        <tbody>
+            {% for pupil in user.current_grade.pupils %}
+                <tr class="{% cycle 'gray' '' %}">
+                    <td><nobr>{{ pupil.fi }}</nobr></td>
+                    {% for lesson in lessons %}
+                        <td class="for-mark" mark="true" pupil="{{ pupil.id }}" lesson="{{ lesson.id }}" left="p-{{ pupil.id }}-{{ lesson|prev_date:lessons }}" right="p-{{ pupil.id }}-{{ lesson|next_date:lessons }}" up="p-{{ pupil|up_pupil:user.current_grade.pupils }}-{{ lesson.id }}" down="p-{{ pupil|down_pupil:user.current_grade.pupils }}-{{ lesson.id }}" next="p-{{ pupil|first_pupil:user.current_grade.pupils }}-{{ lesson|next_date:lessons }}" id="p-{{ pupil.id }}-{{ lesson.id }}">
+                            {{ pupil|get_mark:lesson }}
+                        </td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endif %}
 	</td>
 	</tr>
 </table>

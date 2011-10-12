@@ -16,19 +16,19 @@
 {% block content %}
 <br />
 {% if objects.object_list %}
-<table class="table">
-	<thead>
-		<th>ФИО</th>
-		<th>Логин</th>
-		<th>Действия</th>
-	</thead>
-	{% for object in objects.object_list %}
-		<tr class="{% cycle 'gray' '' %}">
-			<td>{{ object.fio }}</td>
-			<td>{{ object.username }}</td>
-			<td>{% include "helpers/buttons/edit.html" %}</td>
-	{% endfor %}
-</table>
-{% include "helpers/paginator.html" %}
+    <table class="table">
+        <thead>
+            <th>ФИО</th>
+            <th>Логин</th>
+            <th>Действия</th>
+        </thead>
+        {% for object in objects.object_list %}
+            <tr class="{% cycle 'gray' '' %}">
+                <td>{{ object.fio }}</td>
+                <td>{{ object.username }}</td>
+                <td>{% include "helpers/buttons/edit.html" %}</td>
+        {% endfor %}
+    </table>
+    {% include "helpers/paginator.html" %}
 	{% endif %}
 {% endblock %}

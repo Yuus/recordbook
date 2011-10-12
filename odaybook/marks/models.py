@@ -50,12 +50,13 @@ class Mark(models.Model):
     '''
         Оценка или пропуск за 1 урок.
     '''
-    pupil = models.ForeignKey(Pupil, verbose_name = u'Ученик')
-    lesson = models.ForeignKey(Lesson, verbose_name = u'Занятие')
-    mark = models.IntegerField(u'Отметка', blank = True, null = True)
-    absent = models.BooleanField(u'Отсутствовал')
-    date = models.DateTimeField(u'Дата выставления', auto_now_add = True)
-    comment = models.TextField(u'Комментарий к отметке', blank = True)
+    pupil = models.ForeignKey(Pupil, verbose_name=u'Ученик')
+    lesson = models.ForeignKey(Lesson, verbose_name=u'Занятие')
+    mark = models.IntegerField(verbose_name=u'Отметка', blank=True, null=True)
+    absent = models.BooleanField(verbose_name=u'Отсутствовал')
+    sick = models.BooleanField(verbose_name=u'Болел', blank=True, null=True)
+    date = models.DateTimeField(verbose_name=u'Дата выставления', auto_now_add=True)
+    comment = models.TextField(verbose_name=u'Комментарий к отметке', blank=True)
 
     serialize_fields = ['id', 'pupil_id', 'lesson_id', 'mark', 'absent', 'date']
     serialize_name = 'mark'
@@ -74,7 +75,9 @@ class Mark(models.Model):
             return "normal"
     
     def __unicode__(self):
-        if self.absent:
+        if self.sick:
+            return u'Б'
+        elif self.absent:
             return u'H'
         else:
             return unicode(self.mark)
