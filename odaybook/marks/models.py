@@ -54,7 +54,7 @@ class Mark(models.Model):
     lesson = models.ForeignKey(Lesson, verbose_name=u'Занятие')
     mark = models.IntegerField(verbose_name=u'Отметка', blank=True, null=True)
     absent = models.BooleanField(verbose_name=u'Отсутствовал')
-    sick = models.BooleanField(verbose_name=u'Болел', blank=True, null=True)
+    sick = models.BooleanField(verbose_name=u'Болел', blank=True)
     date = models.DateTimeField(verbose_name=u'Дата выставления', auto_now_add=True)
     comment = models.TextField(verbose_name=u'Комментарий к отметке', blank=True)
 
