@@ -199,6 +199,12 @@ class Grade(models.Model):
             self.pupils = Pupil.objects.filter(id__in = [c.pupil.id for c in pupil_connections])
         return self.pupils
 
+    def delete(self, *args, **kwargs):
+        for teacher in Teacher.objects.filter(grades = self):
+            teacher.grades.remove(self)
+            teacher.save()
+        Teacher.objects.filter(grade = self).update(grade = None)
+
 class Subject(models.Model):
     '''Учебная дисциплина'''
     name = models.CharField(u"Наименование", max_length = 100)
