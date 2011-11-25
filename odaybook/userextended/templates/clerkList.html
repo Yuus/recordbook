@@ -67,7 +67,7 @@
                     {# FIXME: img onhover #}
                         <li>
                             {{ role.0 }}
-                            {% if role.4.c.school %}<i>({{ role.4.c.school }})</i>{% endif %}
+                            {% if role.4.school %}<i>({{ role.4.school }})</i>{% endif %}
                             <a href="dismiss/{{ object.id }}/?right={{ role.1 }}&role_id={{ role.4.id }}">
                                 <img src="{{ MEDIA_URL }}images/delete.png" />
                             </a>

@@ -40,9 +40,12 @@ def menu(request):
 
 def environment(request):
     '''
-        Подгрузка раздичных переменных окружения
+        Подгрузка различных переменных окружения
     '''
     render = {}
+
+    render['paginator_page'] = request.GET.get('paginator_page', 0)
+
     user = request.user
     if request.user.is_authenticated():
         if request.user.type == 'Pupil':

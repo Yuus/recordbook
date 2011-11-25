@@ -1,5 +1,5 @@
 {% load formater %}
-<form method="post" action="?{{ params|urllibencode }}">{% csrf_token %}
+<form method="post" action="?paginator_page={{ paginator_page }}&{{ params|urllibencode }}">{% csrf_token %}
 	<table class="table form no-hover">
 		{% for field in form %}
 		<tr>

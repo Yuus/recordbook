@@ -14,6 +14,7 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
 from django.conf import settings
 from django.db.models import get_model
+
 from django.core.urlresolvers import reverse
 from django.core.validators import validate_email, ValidationError
 
@@ -176,7 +177,9 @@ def objectEdit(request, app, model, mode, filter_id = None, id = 0):
             ext['school'] = get_object_or_404(School, id = filter_id)
 
     url = '/administrator/uni/%s.%s/' % (app, model)
-    if filter_id: url += str(filter_id) + '/'
+    if filter_id:
+        url += str(filter_id) + '/'
+    url += '?page=%s' % request.GET.get('paginator_page', '0')
 
     render.update(ext)
 
@@ -248,7 +251,7 @@ def baseUserObjectEdit(request, mode, filter_id = None, id = 0):
     '''
     render = {}
 
-    url = '/accounts/baseuser/'
+    url = '/accounts/baseuser/?page=%s' % request.GET.get('paginator_page', '0')
 
     if id:
         clerk = get_object_or_404(Clerk, id = id)
@@ -710,11 +713,12 @@ def import_pupil(request, filter_id):
                 if len(row[0]) < 2 or len(row[1]) < 2 or len(row[2]) < 2:
                     errors.append({'line': i, 'column': 0, 'error': u'сликшом короткое ФИО'})
                     continue
-                try:
-                    validate_email(row[7])
-                except:
-                    errors.append({'line': i, 'column': 8, 'error': u'email указан неверно'})
-                    continue
+                if row[7]:
+                    try:
+                        validate_email(row[7])
+                    except:
+                        errors.append({'line': i, 'column': 8, 'error': u'email указан неверно'})
+                        continue
                 pupil = Pupil(
                         school = school,
                         last_name = row[0],

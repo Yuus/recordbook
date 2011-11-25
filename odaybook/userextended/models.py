@@ -169,7 +169,8 @@ class Grade(models.Model):
         super(Grade, self).save(*args, **kwargs)
 
     class Meta:
-        ordering = ['number']
+        ordering = ['number', 'long_name']
+        unique_together = ('number', 'long_name')
     
     def get_pupils_for_teacher_and_subject(self, teacher, subject):
         '''
