@@ -38,7 +38,7 @@ class Connection(models.Model):
                                   default = '0')
     class Meta:
         ordering = ['teacher']
-        unique_together = (('teacher', 'subject', 'grade'), )
+        unique_together = (('teacher', 'subject', 'grade', 'connection'), )
         verbose_name = u'Связь'
 
 class Request(models.Model):
