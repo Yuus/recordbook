@@ -170,7 +170,7 @@ class Grade(models.Model):
 
     class Meta:
         ordering = ['number', 'long_name']
-        unique_together = ('number', 'long_name')
+        unique_together = ('school', 'number', 'long_name')
     
     def get_pupils_for_teacher_and_subject(self, teacher, subject):
         '''
