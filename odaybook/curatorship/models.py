@@ -13,7 +13,7 @@ from smart_selects.db_fields import SimpleChainedForeignKey
 
 from odaybook.userextended.models import Teacher, Subject, Grade
 from odaybook.userextended.models import Parent, Pupil
-from django.conf import settings
+from odaybook import settings
 
 GROUPS = zip(*([str(i) for i in range(1, 11)], )*2)
 GROUPS.insert(0, ('0', u'Весь класс'))
