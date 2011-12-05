@@ -62,12 +62,12 @@
         {% endif %}
     </p>
     <table>
-        <tr>
-            {% for pupil in pupils %}
+        {% for pupil in pupils %}
+            <tr>
                 <td>{{ pupil }}</td>
                 <td><a href="#" pupil="{{ pupil.id }}" class="dialog_link">зачислить</a></td>
-            {% endfor %}
-        </tr>
+            </tr>
+        {% endfor %}
     </table>
     {%  comment  %}
     <table class="no-hover"><tr><td>

@@ -44,7 +44,7 @@ def environment(request):
     '''
     render = {}
 
-    render['paginator_page'] = request.GET.get('paginator_page', 0)
+    render['paginator_page'] = request.GET.get('paginator_page', 1)
 
     user = request.user
     if request.user.is_authenticated():

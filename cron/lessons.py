@@ -7,6 +7,7 @@
 import os
 import sys
 from datetime import timedelta, date
+import logging
 
 PROJECT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
 sys.path.insert(0, PROJECT_DIR)
@@ -16,10 +17,17 @@ execfile(activate_this, dict(__file__=activate_this))
 
 os.environ['DJANGO_SETTINGS_MODULE'] = 'odaybook.settings'
 
+logging.basicConfig(level=logging.DEBUG,
+                    format='%(asctime)s %(message)s',
+                    filename='/tmp/odaybook_crontabs.log');
+LOGGER = logging.getLogger()
+
 from odaybook.userextended.models import Teacher
 from odaybook.attendance.models import UsalTimetable
 from odaybook.marks.models import Lesson, ResultDate
 from odaybook.curatorship.models import Connection
+
+LOGGER.warning('Lessons create started')
 
 for user in Teacher.objects.all():
 
@@ -49,6 +57,8 @@ for user in Teacher.objects.all():
                     for j in xrange(max(groups) - Lesson.objects.filter(**kwargs4lesson).count()):
                         t = Lesson(**kwargs4lesson)
                         t.save()
+                        LOGGER.debug('Lesson %d for attendance %d created by crontab' %
+                                     (lesson.id, UsalTimetable.objects.filter(**kwargs)[0].id))
                         t.grade.add(kwargs['grade'])
                         t.save()
             resultdates = ResultDate.objects.filter(date = d, grades = kwargs['grade'])
@@ -68,3 +78,5 @@ for user in Teacher.objects.all():
                     lesson.save()
                     lesson.grade.add(kwargs['grade'])
                     lesson.save()
+                    LOGGER.debug('Lesson %d for resultdate %d created by crontab' %
+                                 (lesson.id, resultdate.id))

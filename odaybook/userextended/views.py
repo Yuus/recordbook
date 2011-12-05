@@ -179,7 +179,7 @@ def objectEdit(request, app, model, mode, filter_id = None, id = 0):
     url = '/administrator/uni/%s.%s/' % (app, model)
     if filter_id:
         url += str(filter_id) + '/'
-    url += '?page=%s' % request.GET.get('paginator_page', '0')
+    url += '?page=%s' % request.GET.get('paginator_page', '1')
 
     render.update(ext)
 
@@ -251,7 +251,7 @@ def baseUserObjectEdit(request, mode, filter_id = None, id = 0):
     '''
     render = {}
 
-    url = '/accounts/baseuser/?page=%s' % request.GET.get('paginator_page', '0')
+    url = '/accounts/baseuser/?page=%s' % request.GET.get('paginator_page', '1')
 
     if id:
         clerk = get_object_or_404(Clerk, id = id)

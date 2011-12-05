@@ -1,5 +1,6 @@
 # -*- coding: UTF-8 -*-
 from datetime import date, timedelta
+import logging
 
 from django.template import RequestContext
 from django.shortcuts import render_to_response, get_object_or_404
@@ -16,6 +17,8 @@ from odaybook.attendance.models import UsalTimetable
 
 from models import Lesson, Mark, ResultDate
 from forms import LessonForm, StatForm
+
+LOGGER = logging.getLogger(__name__)
 
 @login_required
 def index(request):
@@ -161,6 +164,9 @@ def index(request):
                         t.save()
                         t.grade.add(request.user.current_grade)
                         t.save()
+                        LOGGER.debug('Lesson %d for attendance %d created by teacher' %
+                                     (t.id, UsalTimetable.objects.filter(**kwargs)[0].id))
+
             resultdates = ResultDate.objects.filter(date = d, grades = request.user.current_grade)
             if resultdates:
                 resultdate = resultdates[0]
@@ -178,6 +184,8 @@ def index(request):
                     lesson.save()
                     lesson.grade.add(request.user.current_grade)
                     lesson.save()
+                    LOGGER.debug('Lesson %d for resultdate %d created by teacher' %
+                                 (lesson.id, resultdate.id))
 
         if len(kwargs4lesson) == 0:
             raise Http404(u'Нет расписания')
