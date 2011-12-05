@@ -216,7 +216,10 @@ class PupilConnectionForm(forms.ModelForm):
     '''
     def __init__(self, subject, pupil = None, *args, **kwargs):
         if PupilConnection.objects.filter(pupil = pupil, subject = subject):
-            kwargs['instance'] = PupilConnection.objects.get(pupil = pupil, subject = subject)
+            try:
+                kwargs['instance'] = PupilConnection.objects.get(pupil = pupil, subject = subject)
+            except PupilConnection.MultipleObjectsReturned:
+                kwargs['instance'] = PupilConnection.objects.filter(pupil = pupil, subject = subject)[0]
         super(PupilConnectionForm, self).__init__(*args, **kwargs)
         self.pupil = pupil
         self.subject = subject
