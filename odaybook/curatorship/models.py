@@ -64,7 +64,7 @@ class Request(models.Model):
         self.activated_timestamp = datetime.datetime.now()
         send_mail(u'Система электронных дневников. Одобрение привязки к ученику.',
                   render_to_string('~curatorship/parent_approve_mail.html'),
-                  settings['DEFAULT_FROM_EMAIL'], [self.parent.email])
+                  settings.DEFAULT_FROM_EMAIL, [self.parent.email])
         self.save()
 
     def disapprove(self):
@@ -75,7 +75,7 @@ class Request(models.Model):
         self.activated_timestamp = datetime.datetime.now()
         send_mail(u'Система электронных дневников. Отклонение привязки к ученику.',
                   render_to_string('~curatorship/parent_disapprove_mail.html'),
-                  settings['DEFAULT_FROM_EMAIL'], [self.parent.email])
+                  settings.DEFAULT_FROM_EMAIL, [self.parent.email])
         self.save()
 
     
