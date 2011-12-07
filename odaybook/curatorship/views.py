@@ -8,7 +8,7 @@ from django.shortcuts import render_to_response, get_object_or_404
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.contrib.auth.decorators import login_required, user_passes_test
 
-from odaybook.userextended.models import Teacher, Grade, Pupil, School
+from odaybook.userextended.models import Teacher, Grade, Pupil, School, PupilConnection
 from odaybook.userextended.forms import PupilConnectionForm
 from models import Connection, Request
 from forms import PupilForm, ParentRequestForm
@@ -96,9 +96,16 @@ def pupil_edit(request, mode, id = 0):
         if mode == 'edit':
             pupil = get_object_or_404(Pupil, id = id)
             form = PupilForm(request.POST, instance = pupil)
-            render['groups'] = [PupilConnectionForm(sbj, pupil, data = request.POST, prefix = sbj.id)
-                                for sbj in pupil.grade.get_subjects()
-                                if sbj.groups]
+            render['groups'] = []
+            for sbj in pupil.grade.get_subjects():
+                if sbj.groups:
+                    render['groups'].append(PupilConnectionForm(
+                        sbj,
+                        pupil,
+                        data=request.POST,
+                        prefix=sbj.id,
+                        instance=PupilConnection.objects.get_or_create(subject=sbj, pupil=pupil)[0]))
+
             form_factory_valid = all([f.is_valid() for f in render['groups']])
             if form.is_valid() and form_factory_valid:
                 form.save()
