@@ -155,7 +155,7 @@ class Grade(models.Model):
             Получение списка всех предметов, которые ведутся в этом классе
         '''
         from odaybook.curatorship.models import Connection
-        return [c.subject for c in Connection.objects.filter(grade = self)]
+        return list(set([c.subject for c in Connection.objects.filter(grade = self)]))
 
     def get_subjects_queryset(self):
         u'''
@@ -177,17 +177,18 @@ class Grade(models.Model):
             В свойство pupils записываются ученики, у которых преподаватель teacher ведёт предмет subject.
         '''
         from odaybook.curatorship.models import Connection
-        conn = Connection.objects.filter(teacher = teacher, grade = self, subject = subject)
-        if not conn:
+        conns = Connection.objects.filter(teacher = teacher, grade = self, subject = subject)
+        if not conns:
             raise PlaningError(u'нет учеников')
-        conn = conn[0]
-        if conn.connection == '0':
-            self.pupils = Pupil.objects.filter(grade = self)
-        else:
-            pupil_connections = PupilConnection.objects.filter(pupil__grade = self,
-                                                               subject = subject,
-                                                               value = conn.connection)
-            self.pupils = Pupil.objects.filter(id__in = [c.pupil.id for c in pupil_connections])
+        self.pupils = []
+        for conn in conns:
+            if conn.connection == '0':
+                self.pupils += Pupil.objects.filter(grade = self)
+            else:
+                pupil_connections = PupilConnection.objects.filter(pupil__grade = self,
+                                                                   subject = subject,
+                                                                   value = conn.connection)
+                self.pupils += Pupil.objects.filter(id__in = [c.pupil.id for c in pupil_connections])
         return self.pupils
 
     def delete(self, *args, **kwargs):
