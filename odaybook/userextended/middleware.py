@@ -60,7 +60,7 @@ class AuthenticationMiddleware(object):
     def process_response(self, request, response):
         if hasattr(request, 'user') and \
            request.META['PATH_INFO']!='/curatorship/send-append-request/' and \
-           request.user.is_authenticated():
+           hasattr(request.user, 'is_authenticated') and request.user.is_authenticated():
             if hasattr(request.user, 'type') and request.user.type == 'Parent':
                 if request.user.pupils.all():
                     if not request.user.current_pupil:

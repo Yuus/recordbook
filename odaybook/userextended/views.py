@@ -609,6 +609,10 @@ def import_teacher(request, filter_id):
     else:
         render['form'] = form = ImportForm(request.POST, request.FILES)
         if form.is_valid():
+
+            curatorship_grades_ids = [{'number': teacher.grade.number, 'long_name': teacher.grade.long_name}
+                                      for teacher in Teacher.objects.filter(school=school) if teacher.grade]
+
             render['errors'] = errors = []
             teachers = []
             rows = csv.reader(form.cleaned_data['file'], delimiter = ';')
@@ -640,21 +644,28 @@ def import_teacher(request, filter_id):
                     teacher._subjects = []
                     t = [j.strip() for j in row[4].split(',')]
                     for sbj in t:
-                        try: teacher._subjects.append(Subject.objects.get(name = sbj, school = school))
-                        except Subject.DoesNotExist: errors.append({'line': i, 'column': 5,
-                                                                    'error': u'предмет "%s" не найден' % sbj})
+                        try:
+                            teacher._subjects.append(Subject.objects.get(name = sbj, school = school))
+                        except Subject.DoesNotExist:
+                            errors.append({'line': i, 'column': 5,
+                            'error': u'предмет "%s" не найден' % sbj})
                     teacher._grades = []
                     t = [j.strip() for j in row[5].split(',')]
                     for grade in t:
                         if not get_grade(grade):
                             errors.append({'line': i, 'column': 5, 'error': u'класс "%s" не найден' % grade})
                             continue
-                        try: teacher._grades.append(Grade.objects.get(school = school, **get_grade(grade)))
-                        except Grade.DoesNotExist: errors.append({'line': i, 'column': 5,
-                                                                  'error': u'класс "%s" не найден' % grade})
+                        try:
+                            teacher._grades.append(Grade.objects.get(school = school, **get_grade(grade)))
+                        except Grade.DoesNotExist:
+                            errors.append({'line': i, 'column': 5, 'error': u'класс "%s" не найден' % grade})
                     if row[6]:
                         if not get_grade(row[6]):
                             errors.append({'line': i, 'column': 6, 'error': u'класс "%s" не найден' % row[6]})
+                            continue
+                        if get_grade(row[6]) in curatorship_grades_ids:
+                            errors.append({'line': i, 'column': 6, 'error': u'Классное руководство для "%s" \
+                            уже присвоено другому учителю' % row[6]})
                             continue
                         try:
                             teacher.grade = Grade.objects.get(school = school, **get_grade(row[6]))
@@ -662,8 +673,9 @@ def import_teacher(request, filter_id):
                             errors.append({'line': i, 'column': 6, 'error': u'класс "%s" не найден' % row[6]})
                             continue
                     teachers.append(teacher)
+                    curatorship_grades_ids.append(get_grade(row[6]))
 
-            except csv.Error:
+            except (csv.Error):
                 pass
 
             if len(errors) == 0:
