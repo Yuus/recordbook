@@ -709,65 +709,69 @@ def import_pupil(request, filter_id):
             pupils = []
             rows = csv.reader(form.cleaned_data['file'], delimiter = ';')
             i = 0
-            for row in rows:
-                i += 1
-                if len(row) < 12:
-                    errors.append({'line': i, 'column': 0, 'error': u'неверное количество столбцов'})
-                    continue
-                try:
-                    row = ";".join(row)
-                    row = row.decode('cp1251')
-                except UnicodeError:
-                    errors.append({'line': i, 'column': 0,
-                                   'error': u'некорректное значение (невозможно определить кодировку)'})
-                    continue
-                row = row.split(';')
-                if len(row[0]) < 2 or len(row[1]) < 2 or len(row[2]) < 2:
-                    errors.append({'line': i, 'column': 0, 'error': u'сликшом короткое ФИО'})
-                    continue
-                if row[7]:
-                    try:
-                        validate_email(row[7])
-                    except:
-                        errors.append({'line': i, 'column': 8, 'error': u'email указан неверно'})
-                        continue
-                pupil = Pupil(
-                        school = school,
-                        last_name = row[0],
-                        first_name = row[1],
-                        middle_name = row[2],
-                        email = row[7],
-                        parent_phone_1 = row[5],
-                        parent_phone_2 = row[6],
-                        order = row[8],
-                        health_group = row[9],
-                        health_note = row[10],
-                        )
-                if row[4]:
-                    if not get_grade(row[4]):
-                        errors.append({'line': i, 'column': 4, 'error': u'класс "%s" не найден' % row[4]})
+            try:
+                for row in rows:
+                    i += 1
+                    if len(row) < 12:
+                        errors.append({'line': i, 'column': 0, 'error': u'неверное количество столбцов'})
                         continue
                     try:
-                        pupil.grade = Grade.objects.get(school = school, **get_grade(row[4]))
-                    except Grade.DoesNotExist:
-                        errors.append({'line': i, 'column': 4, 'error': u'класс "%s" не найден' % row[4]})
+                        row = ";".join(row)
+                        row = row.decode('cp1251')
+                    except UnicodeError:
+                        errors.append({'line': i, 'column': 0,
+                                       'error': u'некорректное значение (невозможно определить кодировку)'})
                         continue
-                else:
-                    errors.append({'line': i, 'column': 4, 'error': u'неуказан класс'})
-                if row[3].lower() in [u'м', u'ж', '']:
-                    pupil.sex = '1'
-                    if row[3].lower == u'ж': pupil.sex = '2'
-                else:
-                    errors.append({'line': i, 'column': 3, 'error': u'существо неизвестного пола'})
-                    continue
-                row[8] = row[8].lower()
-                if row[8] in [u'да', u'нет', '']:
-                    pupil.special = False
-                    if row[8] == u'да': row[8] = True
-                else:
-                    errors.append({'line': i, 'column': 8, 'error': u'укажите учитывать ли как специальную группу'})
-                    continue
-                pupils.append(pupil)
+                    row = row.split(';')
+                    if len(row[0]) < 2 or len(row[1]) < 2 or len(row[2]) < 2:
+                        errors.append({'line': i, 'column': 0, 'error': u'сликшом короткое ФИО'})
+                        continue
+                    if row[7]:
+                        try:
+                            validate_email(row[7])
+                        except:
+                            errors.append({'line': i, 'column': 8, 'error': u'email указан неверно'})
+                            continue
+                    pupil = Pupil(
+                            school = school,
+                            last_name = row[0],
+                            first_name = row[1],
+                            middle_name = row[2],
+                            email = row[7],
+                            parent_phone_1 = row[5],
+                            parent_phone_2 = row[6],
+                            order = row[8],
+                            health_group = row[9],
+                            health_note = row[10],
+                            )
+                    if row[4]:
+                        if not get_grade(row[4]):
+                            errors.append({'line': i, 'column': 4, 'error': u'класс "%s" не найден' % row[4]})
+                            continue
+                        try:
+                            pupil.grade = Grade.objects.get(school = school, **get_grade(row[4]))
+                        except Grade.DoesNotExist:
+                            errors.append({'line': i, 'column': 4, 'error': u'класс "%s" не найден' % row[4]})
+                            continue
+                    else:
+                        errors.append({'line': i, 'column': 4, 'error': u'неуказан класс'})
+                    if row[3].lower() in [u'м', u'ж', '']:
+                        pupil.sex = '1'
+                        if row[3].lower == u'ж': pupil.sex = '2'
+                    else:
+                        errors.append({'line': i, 'column': 3, 'error': u'существо неизвестного пола'})
+                        continue
+                    row[8] = row[8].lower()
+                    if row[8] in [u'да', u'нет', '']:
+                        pupil.special = False
+                        if row[8] == u'да': row[8] = True
+                    else:
+                        errors.append({'line': i, 'column': 8, 'error': u'укажите учитывать ли как специальную группу'})
+                        continue
+                    pupils.append(pupil)
+            except (csv.Error):
+                pass
+
 
             if len(errors) == 0:
                 for pupil in pupils:
