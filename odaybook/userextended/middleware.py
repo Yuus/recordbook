@@ -43,6 +43,11 @@ class LazyUser(object):
                         if not userprofile.current_subject and userprofile.subjects.all():
                             userprofile.current_subject = userprofile.subjects.all()[0]
                     userprofile.save()
+                    if userprofile.type == 'Parent':
+                        if userprofile.pupils.all():
+                            if not userprofile.current_pupil:
+                                userprofile.current_pupil = userprofile.pupils.all()[0]
+                                userprofile.save()
                 except Clerk.DoesNotExist:
                     userprofile = user
                 logger.debug(u'Закончена загрузка middleware view для пользователя типа %s с id=%d' %
@@ -61,12 +66,8 @@ class AuthenticationMiddleware(object):
         if hasattr(request, 'user') and \
            request.META['PATH_INFO']!='/curatorship/send-append-request/' and \
            hasattr(request.user, 'is_authenticated') and request.user.is_authenticated():
-            if hasattr(request.user, 'type') and request.user.type == 'Parent':
-                if request.user.pupils.all():
-                    if not request.user.current_pupil:
-                        request.user.current_pupil = request.user.pupils.all()[0]
-                        request.user.save()
-                else:
+            if request.user.type == 'Parent':
+                if not request.user.pupils.all():
                     messages.error(request, u'''К вашему профилю не добавлено ни одного ребёнка.
                     <a href="/curatorship/send-append-request">Отправить запрос на прикрепление ребёнка.</a>''')
                     return render_to_response("message.html", context_instance = RequestContext(request))
