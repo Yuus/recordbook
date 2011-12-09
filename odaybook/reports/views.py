@@ -406,6 +406,7 @@ def view_marks(request, id):
     from django.db.models import Avg
     render = {}
     pupil = request.user.current_pupil
+    pupil.get_groups()
     subject = get_object_or_404(Subject, id = id, school = pupil.school)
     subject.teacher = pupil.get_teacher(subject)
     subject.avg = Mark.objects.filter(pupil = pupil,
