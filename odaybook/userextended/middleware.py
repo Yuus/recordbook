@@ -66,7 +66,7 @@ class AuthenticationMiddleware(object):
         if hasattr(request, 'user') and \
            request.META['PATH_INFO']!='/curatorship/send-append-request/' and \
            hasattr(request.user, 'is_authenticated') and request.user.is_authenticated():
-            if request.user.type == 'Parent':
+            if hasattr(request.user, 'type') and request.user.type == 'Parent':
                 if not request.user.pupils.all():
                     messages.error(request, u'''К вашему профилю не добавлено ни одного ребёнка.
                     <a href="/curatorship/send-append-request">Отправить запрос на прикрепление ребёнка.</a>''')
