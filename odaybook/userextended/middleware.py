@@ -10,16 +10,17 @@ from django.template import RequestContext
 from models import Clerk, Notify
 import logging
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger()
 
 class LazyUser(object):
     '''
         Подмена джанговской модели пользователя системной.
     '''
-    def __get__(self, request, obj_type=None):
+    def __get__(self, request, obj_type=None, user=None):
         if not hasattr(request, '_cached_user'):
             logger.debug(u'Начата загрузка view для пользователя')
-            user = get_user(request)
+            if not user:
+                user = get_user(request)
             userprofile = user
             userprofile.type = 'Anonymous'
             if user.is_authenticated():
@@ -88,8 +89,6 @@ class AdminPeepingMiddleware(object):
             if not request.user.type != 'SuperUser':
                 raise Http404('not superuser')
             user = request.COOKIES.get('zombie')
-            user = get_object_or_404(Clerk, id = user)
-            if not user.current_role:
-                if user.roles.all():
-                    user.current_role = user.roles.all()[0]
-            request.user = user.get_current_role()
+            user = get_object_or_404(Clerk, id=user)
+            delattr(request, '_cached_user')
+            request.user = LazyUser().__get__(request, user=user)
