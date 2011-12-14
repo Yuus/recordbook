@@ -149,8 +149,11 @@ def import_timetable(request, school):
                 row = row.split(';')
                 if last_grade != row[0]:
                     workday = 0
-                if int(row[1]) == 1:
-                    workday += 1
+                try:
+                    if int(row[1]) == 1:
+                        workday += 1
+                except ValueError:
+                    pass
 
                 number = int(row[1])
 
