@@ -128,9 +128,11 @@ def SystemInitCallback(sender, **kwargs):
         {'key': 'vnc_link', 'key_ru': u'Ссылка на приложение ТП'},
         {'key': 'recaptcha_public_key', 'key_ru': u'ReCAPTCHA публичный ключ'},
         {'key': 'recaptcha_private_key', 'key_ru': u'ReCAPTCHA приватный ключ'},
+        {'key': 'second_copyright', 'key_ru': u'Дублирующая ремарка авторского права'},
     ]
     for option in options:
-        Option.objects.get_or_create(**option)
+        if not Option.objects.filter(key = option['key']):
+            Option(**option).save()
 
 post_syncdb.connect(SystemInitCallback)
 

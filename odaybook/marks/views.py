@@ -57,7 +57,17 @@ def index(request):
                 raise Http404(u'Нет такого предмета')
             request.user.current_subject = subject
             request.user.save()
-        
+
+        if request.user.get_grades_for_marks():
+            request.user.current_grade = request.user.get_grades_for_marks()[0]
+        else:
+            messages.error(request, u'К вам не прикреплено классов')
+            return render_to_response(
+                    '~marks/%s/index.html' % request.user.type.lower(),
+                    render,
+                    context_instance = RequestContext(request))
+
+
         render['lesson_form'] = LessonForm()
         if request.GET.get('set_lesson', False):
             lesson = get_object_or_404(Lesson,
@@ -115,9 +125,6 @@ def index(request):
                     '~marks/%s/index.html' % request.user.type.lower(),
                     render,
                     context_instance = RequestContext(request))
-
-        if not request.user.get_grades_for_marks():
-            request.user.current_grade = None
 
         from pytils import dt
         try:

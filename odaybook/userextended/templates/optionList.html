@@ -18,7 +18,7 @@
 	{% for object in objects.object_list %}
 		<tr class="{% cycle 'gray' '' %}">
 			<td>{{ object.key_ru }}</td>
-			<td>{{ object.value }}</td>
+			<td>{{ object.value|default:"" }}</td>
 			<td><a href="edit/{{ object.id }}/" title="редактировать"><img src="{{ MEDIA_URL }}/images/edit.png"/></a></td>
 		</tr>
 	{% empty %}

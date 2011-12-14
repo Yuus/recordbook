@@ -168,6 +168,10 @@
                 <div class="column">
                     <p>
 	                    &copy;&nbsp;2009&#150;{{ current_year }}&nbsp;<a href="http://aleks-komkov.ru/">Комков&nbsp;Александр</a>
+                        <br />
+                        {% if second_copyright.value %}
+                            {{ second_copyright.value|safe }}
+                        {% endif %}
                     </p>
                 </div>
                 <div class="column">

@@ -53,9 +53,10 @@ def environment(request):
 
         if user.type not in ['Pupil', 'Parent']:
             try:
-                render['vnc_link'] = Option.objects.get(key = 'vnc_link')
+                render['vnc_link'] = Option.objects.get(key='vnc_link')
             except Option.DoesNotExist:
                 pass
+    render['second_copyright'] = Option.objects.get(key='second_copyright')
     render['current_year'] = date.today().year
     return render
 

@@ -399,6 +399,7 @@ def report_marks(request, mode = 'all'):
 
 
 @login_required
+@user_passes_test(lambda u: u.type == 'Parent')
 def view_marks(request, id):
     '''
         Просмотр оценок по определённым предметам. 
@@ -429,10 +430,13 @@ def view_marks(request, id):
         6: u'Сб',
     }
     subject.days = []
-    lessons = UsalTimetable.objects.filter(
-            grade = pupil.grade,
-            subject = subject,
-            group = pupil.groups[subject.id].group).order_by('workday')
+    try:
+        lessons = UsalTimetable.objects.filter(
+                grade = pupil.grade,
+                subject = subject,
+                group = pupil.groups[subject.id].group).order_by('workday')
+    except KeyError:
+        lessons = []
     for lesson in lessons:
         if int(lesson.workday) not in subject.days:
             subject.days.append(int(lesson.workday))

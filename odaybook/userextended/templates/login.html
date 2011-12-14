@@ -51,7 +51,9 @@
   </div>
     <div style="margin: 0 20px">
         &copy; <a href="http://aleks-komkov.ru">Александр Комков</a><br />
-        <a href="http://www.edu.sochi.ru">МБУ &laquo;Информационно-методический центр&raquo; города Сочи</a>
+        {% if second_copyright.value %}
+            {{ second_copyright.value|safe }}
+        {% endif %}
     </div>
 <script type="text/javascript">
 	document.getElementById('id_username').focus();

@@ -7,6 +7,10 @@ u'''
 
 from settings_dist import *
 
+
+ADMINS = (
+)
+
 #DATABASES = {
 #    'default': {
 #        'ENGINE': 'django.db.backends.mysql', # Add 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
