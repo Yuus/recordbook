@@ -61,7 +61,7 @@
 <table class="table">
 	{% for school in objects.object_list %}
 		<tr id="sch{{ school.id }}">
-			<td colspan="3">
+			<td colspan="4">
 				<h2>
 					{{ school.name }} 
 					<a href="/administrator/uni/userextended.School/{{ school.id }}/edit/{{ school.id }}/"><img src="{{ MEDIA_URL}}images/edit.png" /></a>
@@ -87,6 +87,13 @@
                 {% endif %}
             </td>
 			<td>
+				{% if school.show.teachers %}
+					<a href="/administrator/uni/userextended.Teacher/{{ school.id }}/">Учителя</a>
+				{% else %}
+					Учителя
+				{% endif %}
+			</td>
+			<td>
 				{% if school.show.pupils %}
 					<a href="/administrator/uni/userextended.Pupil/{{ school.id }}/">Ученики</a>
 				{% else %}
@@ -95,13 +102,6 @@
 			</td>
         </tr>
 		<tr>
-			<td>
-				{% if school.show.teachers %}
-					<a href="/administrator/uni/userextended.Teacher/{{ school.id }}/">Учителя</a>
-				{% else %}
-					Учителя
-				{% endif %}
-			</td>
             <td>
                 {% if school.show.connections %}
                   <a href="/administrator/uni/curatorship.Connection/{{ school.id }}/">Связки</a>
@@ -110,45 +110,22 @@
                 {% endif %}
             </td>
 			<td>
-                {% comment %}
-				{% if school.show.staff %}
-					<a href="/administrator/uni/userextended.Staff/{{ school.id }}/">Персонал</a>
-				{% else %}
-					Персонал
-				{% endif %}
-				{% if school.show.options %}
-					<a href="/administrator/uni/userextended.Option/{{ school.id }}/">Настройки</a>
-				{% else %}
-					Настройки
-				{% endif %}
-                {% endcomment %}
 				{% if school.show.timetables %}
 					<a href="/attendance/timetable/select/{{ school.id }}/">Расписания</a>
 				{% else %}
 					Расписания
 				{% endif %}
 			</td>
-		</tr>
-		<tr>
-			<td colspan="3">
+			<td colspan="2">
 				{% if school.show.resultdates %}
 					<a href="/administrator/uni/marks.ResultDate/{{ school.id }}/">Итоговые периоды</a>
 				{% else %}
 					Итоговые периоды
 				{% endif %}
 			</td>
-    {% comment %}
-			<td>
-		        {% if school.show.ringtimetable %}
-		          <a href="/attendance/ringtimetable/{{ school.id }}/">Расписание звонков</a>
-		        {% else %}
-		          Расписание звонков
-		        {% endif %}
-			</td>
-    {% endcomment %}
 		</tr>
 		<tr>
-			<td colspan="3"><hr /></td>
+			<td colspan="4"><hr /></td>
 		</tr>
 	{% endfor %}
 </table>

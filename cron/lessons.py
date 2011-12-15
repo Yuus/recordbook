@@ -22,16 +22,16 @@ logging.basicConfig(level=logging.DEBUG,
                     filename='/tmp/odaybook_crontabs.log');
 LOGGER = logging.getLogger()
 
-from odaybook.userextended.models import Teacher
+from odaybook.userextended.models import Teacher, Grade
 from odaybook.attendance.models import UsalTimetable
 from odaybook.marks.models import Lesson, ResultDate
 from odaybook.curatorship.models import Connection
 
 LOGGER.warning('Lessons create started')
 
-for user in Teacher.objects.all():
+for teacher in Teacher.objects.all():
 
-    for conn in Connection.objects.all():
+    for conn in Connection.objects.filter(teacher=teacher):
         kwargs = {
             'subject': conn.subject,
             'grade': conn.grade
@@ -46,21 +46,28 @@ for user in Teacher.objects.all():
             d = date_start - timedelta(days = i)
             kwargs['workday'] = str(d.weekday()+1)
             if UsalTimetable.objects.filter(**kwargs):
-                kwargs4lesson = {'teacher': user,
+
+                kwargs4lesson = {'teacher': teacher,
                                  'date': d,
-                                 'subject': kwargs['subject']}
-                groups = {}
-                for lesson in UsalTimetable.objects.filter(**kwargs):
-                    groups[lesson.group] = groups.get(lesson.group, 0) + 1
-                groups = groups.values()
-                if Lesson.objects.filter(grade = kwargs['grade'], **kwargs4lesson).count() != max(groups):
-                    for j in xrange(max(groups) - Lesson.objects.filter(**kwargs4lesson).count()):
-                        t = Lesson(**kwargs4lesson)
-                        t.save()
-                        LOGGER.debug('Lesson %d for attendance %d created by crontab' %
-                                     (lesson.id, UsalTimetable.objects.filter(**kwargs)[0].id))
-                        t.grade.add(kwargs['grade'])
-                        t.save()
+                                 'subject': kwargs['subject'],
+                                 }
+                for planing_lesson in UsalTimetable.objects.filter(**kwargs):
+                    lesson, created = Lesson.objects.get_or_create(**kwargs4lesson)
+                    if created:
+                        lesson.grade.add(conn.grade)
+                        lesson.save()
+#                groups = {}
+#                for lesson in UsalTimetable.objects.filter(**kwargs):
+#                    groups[lesson.group] = groups.get(lesson.group, 0) + 1
+#                groups = groups.values()
+#                if Lesson.objects.filter(grade = kwargs['grade'], **kwargs4lesson).count() != max(groups):
+#                    for j in xrange(max(groups) - Lesson.objects.filter(**kwargs4lesson).count()):
+#                        t = Lesson(**kwargs4lesson)
+#                        t.save()
+#                        LOGGER.debug('Lesson %d for attendance %d created by crontab' %
+#                                     (lesson.id, UsalTimetable.objects.filter(**kwargs)[0].id))
+#                        t.grade.add(kwargs['grade'])
+#                        t.save()
             resultdates = ResultDate.objects.filter(date = d, grades = kwargs['grade'])
             if resultdates:
                 resultdate = resultdates[0]
@@ -68,7 +75,7 @@ for user in Teacher.objects.all():
                     'resultdate': resultdate,
                     'grade': kwargs['grade'],
                     'subject': kwargs['subject'],
-                    'teacher': user
+                    'teacher': teacher
                 }
                 if not Lesson.objects.filter(**kwargs4lesson):
                     del kwargs4lesson['grade']
