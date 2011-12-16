@@ -58,14 +58,15 @@ def index(request):
             request.user.current_subject = subject
             request.user.save()
 
-        if request.user.get_grades_for_marks():
-            request.user.current_grade = request.user.get_grades_for_marks()[0]
-        else:
-            messages.error(request, u'К вам не прикреплено классов')
-            return render_to_response(
-                    '~marks/%s/index.html' % request.user.type.lower(),
-                    render,
-                    context_instance = RequestContext(request))
+        if not request.user.current_grade:
+            if request.user.get_grades_for_marks():
+                request.user.current_grade = request.user.get_grades_for_marks()[0]
+            else:
+                messages.error(request, u'К вам не прикреплено классов')
+                return render_to_response(
+                        '~marks/%s/index.html' % request.user.type.lower(),
+                        render,
+                        context_instance = RequestContext(request))
 
 
         render['lesson_form'] = LessonForm()
