@@ -45,6 +45,7 @@ urlpatterns = patterns("odaybook.userextended.views",
                        (r'^uni/userextended.Grade/(?P<filter_id>\d+)/import/$', 'import_grade'),
                        (r'^uni/userextended.Teacher/(?P<filter_id>\d+)/import/$', 'import_teacher'),
                        (r'^uni/userextended.Pupil/(?P<filter_id>\d+)/import/$', 'import_pupil'),
+                       (r'^uni/userextended.Subject/(?P<filter_id>\d+)/import/$', 'import_subject'),
 
                        (r'^set_role/(?P<role_id>\d+)/$', 'set_role'),
                        (r'^set_current_pupil/(?P<id>\d+)/$', 'set_current_pupil'),

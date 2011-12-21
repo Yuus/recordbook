@@ -779,3 +779,50 @@ def import_pupil(request, filter_id):
                 messages.success(request, u'Ученики импортированы')
                 return HttpResponseRedirect('..')
     return render_to_response('~userextended/pupilImport.html', render, context_instance = RequestContext(request))
+@login_required
+@user_passes_test(lambda u: reduce(lambda x, y: x or y, map(lambda a: a in ['Superuser', 'EduAdmin'], u.types)))
+def import_subject(request, filter_id):
+    '''
+        Импорт классов.
+    '''
+    render = {}
+    if request.user.type == 'EduAdmin':
+        if request.user.school.id != int(filter_id):
+            raise Http404
+    render['school'] = school = get_object_or_404(School, id = filter_id)
+
+    if request.method == 'GET':
+        render['form'] = form = ImportForm()
+    else:
+        render['form'] = form = ImportForm(request.POST, request.FILES)
+        if form.is_valid():
+            render['errors'] = errors = []
+            subjects = []
+            rows = csv.reader(form.cleaned_data['file'], delimiter = ';')
+            i = 0
+            try:
+                for row in rows:
+                    i += 1
+                    if len(row) < 2:
+                        errors.append({'line': i, 'column': 0, 'error': u'недостаточное количество столбцов'})
+                        continue
+                    try:
+                        int(row[1])
+                    except ValueError:
+                        errors.append({'line': i, 'column': 2, 'error': u'это не число'})
+                        continue
+                    try:
+                        row[0] = row[0].decode('cp1251')
+                    except UnicodeError:
+                        errors.append({'line': i, 'column': 0,
+                                       'error': u'некорректное значение (невозможно определить кодировку)'})
+                        continue
+                    subjects.append(Subject(name=row[0], school=school, groups=row[1]))
+            except csv.Error:
+                pass
+            if len(errors) == 0:
+                for sbj in subjects:
+                    sbj.save()
+                messages.success(request, u'Предметы импортированы')
+                return HttpResponseRedirect('..')
+    return render_to_response('~userextended/subjectImport.html', render, context_instance = RequestContext(request))
