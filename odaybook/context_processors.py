@@ -57,6 +57,7 @@ def environment(request):
             except Option.DoesNotExist:
                 pass
     render['second_copyright'] = Option.objects.get(key='second_copyright')
+    render['google_analytics_code'] = Option.objects.get(key='google_analytics_code')
     render['current_year'] = date.today().year
     return render
 

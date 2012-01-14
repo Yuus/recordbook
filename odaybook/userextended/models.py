@@ -129,6 +129,7 @@ def SystemInitCallback(sender, **kwargs):
         {'key': 'recaptcha_public_key', 'key_ru': u'ReCAPTCHA публичный ключ'},
         {'key': 'recaptcha_private_key', 'key_ru': u'ReCAPTCHA приватный ключ'},
         {'key': 'second_copyright', 'key_ru': u'Дублирующая ремарка авторского права'},
+        {'key': 'google_analytics_code', 'key_ru': u'Код отслеживания Google Analytics', 'value': 'UA-28349969-1'},
     ]
     for option in options:
         if not Option.objects.filter(key = option['key']):
