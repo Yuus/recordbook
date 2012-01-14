@@ -30,47 +30,36 @@ from odaybook.curatorship.models import Connection
 LOGGER.warning('Lessons create started')
 
 for teacher in Teacher.objects.all():
-
     for conn in Connection.objects.filter(teacher=teacher):
+        if conn.grade.long_name == u'х-б': continue
         kwargs = {
             'subject': conn.subject,
-            'grade': conn.grade
+            'grade': conn.grade,
         }
 
         if conn.connection != '0':
             kwargs['group'] = conn.connection
 
         date_start = date.today()
-        kwargs4lesson = {}
-        for i in xrange(14, -1, -1):
-            d = date_start - timedelta(days = i)
-            kwargs['workday'] = str(d.weekday()+1)
-            if UsalTimetable.objects.filter(**kwargs):
 
-                kwargs4lesson = {'teacher': teacher,
-                                 'date': d,
-                                 'subject': kwargs['subject'],
-                                 }
-                for planing_lesson in UsalTimetable.objects.filter(**kwargs):
-                    lesson, created = Lesson.objects.get_or_create(**kwargs4lesson)
-                    if created:
-                        lesson.grade.add(conn.grade)
-                        lesson.save()
-#                groups = {}
-#                for lesson in UsalTimetable.objects.filter(**kwargs):
-#                    groups[lesson.group] = groups.get(lesson.group, 0) + 1
-#                groups = groups.values()
-#                if Lesson.objects.filter(grade = kwargs['grade'], **kwargs4lesson).count() != max(groups):
-#                    for j in xrange(max(groups) - Lesson.objects.filter(**kwargs4lesson).count()):
-#                        t = Lesson(**kwargs4lesson)
-#                        t.save()
-#                        LOGGER.debug('Lesson %d for attendance %d created by crontab' %
-#                                     (lesson.id, UsalTimetable.objects.filter(**kwargs)[0].id))
-#                        t.grade.add(kwargs['grade'])
-#                        t.save()
-            resultdates = ResultDate.objects.filter(date = d, grades = kwargs['grade'])
-            if resultdates:
-                resultdate = resultdates[0]
+        lesson_kwargs = kwargs.copy()
+        # FIXME: за последний и текущий дни.
+        for i in xrange(14, -1, -1):
+            d = date_start - timedelta(days=i)
+            kwargs['workday'] = str(d.weekday()+1)
+            lesson_kwargs['teacher'] = teacher
+            lesson_kwargs['date'] = d
+            for timetable in UsalTimetable.objects.filter(**kwargs):
+                lesson_kwargs['group'] = timetable.group
+                lesson_kwargs['attendance'] = timetable
+                if not Lesson.objects.filter(**lesson_kwargs):
+                    lesson_kwargs4create = lesson_kwargs.copy()
+                    del lesson_kwargs4create['grade']
+                    lesson = Lesson(**lesson_kwargs4create)
+                    lesson.save()
+                    lesson.grade.add(lesson_kwargs['grade'])
+                    lesson.save()
+            for resultdate in ResultDate.objects.filter(date = d, grades = kwargs['grade']):
                 kwargs4lesson = {
                     'resultdate': resultdate,
                     'grade': kwargs['grade'],
@@ -85,5 +74,62 @@ for teacher in Teacher.objects.all():
                     lesson.save()
                     lesson.grade.add(kwargs['grade'])
                     lesson.save()
-                    LOGGER.debug('Lesson %d for resultdate %d created by crontab' %
-                                 (lesson.id, resultdate.id))
+
+#for teacher in Teacher.objects.all():
+#
+#    for conn in Connection.objects.filter(teacher=teacher):
+#        kwargs = {
+#            'subject': conn.subject,
+#            'grade': conn.grade
+#        }
+#
+#        if conn.connection != '0':
+#            kwargs['group'] = conn.connection
+#
+#        date_start = date.today()
+#        kwargs4lesson = {}
+#        for i in xrange(14, -1, -1):
+#            d = date_start - timedelta(days = i)
+#            kwargs['workday'] = str(d.weekday()+1)
+#            if UsalTimetable.objects.filter(**kwargs):
+#
+#                kwargs4lesson = {'teacher': teacher,
+#                                 'date': d,
+#                                 'subject': kwargs['subject'],
+#                                 }
+##                for planing_lesson in UsalTimetable.objects.filter(**kwargs):
+##                    lesson, created = Lesson.objects.get_or_create(**kwargs4lesson)
+##                    if created:
+##                        lesson.grade.add(conn.grade)
+##                        lesson.save()
+#                groups = {}
+#                for lesson in UsalTimetable.objects.filter(**kwargs):
+#                    groups[lesson.group] = groups.get(lesson.group, 0) + 1
+#                groups = groups.values()
+#                if Lesson.objects.filter(grade = kwargs['grade'], **kwargs4lesson).count() != max(groups):
+#                    for j in xrange(max(groups) - Lesson.objects.filter(**kwargs4lesson).count()):
+#                        t = Lesson(**kwargs4lesson)
+#                        t.save()
+#                        LOGGER.debug('Lesson %d for attendance %d created by crontab' %
+#                                     (lesson.id, UsalTimetable.objects.filter(**kwargs)[0].id))
+#                        t.grade.add(kwargs['grade'])
+#                        t.save()
+#            resultdates = ResultDate.objects.filter(date = d, grades = kwargs['grade'])
+#            if resultdates:
+#                resultdate = resultdates[0]
+#                kwargs4lesson = {
+#                    'resultdate': resultdate,
+#                    'grade': kwargs['grade'],
+#                    'subject': kwargs['subject'],
+#                    'teacher': teacher
+#                }
+#                if not Lesson.objects.filter(**kwargs4lesson):
+#                    del kwargs4lesson['grade']
+#                    lesson = Lesson(topic = resultdate.name,
+#                                    date = resultdate.date,
+#                                    **kwargs4lesson)
+#                    lesson.save()
+#                    lesson.grade.add(kwargs['grade'])
+#                    lesson.save()
+#                    LOGGER.debug('Lesson %d for resultdate %d created by crontab' %
+#                                 (lesson.id, resultdate.id))

@@ -3,7 +3,7 @@ from datetime import date, timedelta
 import logging
 
 from django.template import RequestContext
-from django.shortcuts import render_to_response, get_object_or_404
+from django.shortcuts import render_to_response, get_object_or_404, get_list_or_404
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.paginator import Paginator
@@ -58,34 +58,35 @@ def index(request):
             request.user.current_subject = subject
             request.user.save()
 
-        if request.user.get_grades_for_marks():
-            request.user.current_grade = request.user.get_grades_for_marks()[0]
-        else:
-            messages.error(request, u'К вам не прикреплено классов')
-            return render_to_response(
-                    '~marks/%s/index.html' % request.user.type.lower(),
-                    render,
-                    context_instance = RequestContext(request))
+        if not request.user.current_grade:
+            if request.user.get_grades_for_marks():
+                request.user.current_grade = request.user.get_grades_for_marks()[0]
+            else:
+                messages.error(request, u'К вам не прикреплено классов')
+                return render_to_response(
+                        '~marks/%s/index.html' % request.user.type.lower(),
+                        render,
+                        context_instance = RequestContext(request))
 
 
         render['lesson_form'] = LessonForm()
         if request.GET.get('set_lesson', False):
-            lesson = get_object_or_404(Lesson,
-                                       id = int(request.GET.get('lesson', 0)),
-                                       teacher = request.user)
-            form = LessonForm(request.GET, instance = lesson)
-            if form.is_valid():
-                form.save()
+            ids = request.GET.get('lesson', '').split(',')
+            del ids[len(ids)-1]
+            lessons = get_list_or_404(Lesson, id__in=ids, teacher=request.user, grade=request.user.current_grade)
+            for lesson in lessons:
+                form = LessonForm(request.GET, instance = lesson)
+                if form.is_valid():
+                    form.save()
             return HttpResponse('ok')
         
         if request.GET.get('get_lesson_info', False):
-            lesson = get_object_or_404(Lesson,
-                                       id = int(request.GET.get('lesson', 0)),
-                                       teacher = request.user)
-            return HttpResponse(demjson.encode({'task': lesson.task or '',
-                                                'topic': lesson.topic or ''}))
-            
-        
+            ids = request.GET.get('lesson', '').split(',')
+            del ids[len(ids)-1]
+            lesson = get_list_or_404(Lesson, id__in=ids, teacher=request.user, grade=request.user.current_grade)
+            return HttpResponse(demjson.encode({'task': lesson[0].task or '',
+                                                'topic': lesson[0].topic or ''}))
+
         if request.GET.get('set_mark', False):
             from templatetags.marks_chart import get_mark
             pupil = get_object_or_404(Pupil,
@@ -110,7 +111,7 @@ def index(request):
                 m.mark = int(mark)
             m.save()
             return HttpResponse(demjson.encode({'id': tr_id,
-                                                'mark': get_mark(pupil, lesson),
+                                                'mark': get_mark(pupil, [lesson,]),
                                                 'mark_value': str(m).strip(),
                                                 'mark_type': m.get_type()
                                                 }, encoding = 'utf-8'))
@@ -153,62 +154,31 @@ def index(request):
         if conn.connection != '0':
             kwargs['group'] = conn.connection
 
-        kwargs4lesson = {'date': None}
-        for i in xrange(14, -1, -1):
-            d = date_start - timedelta(days = i)
-            kwargs['workday'] = str(d.weekday()+1)
-            if UsalTimetable.objects.filter(**kwargs):
-                kwargs4lesson = {'teacher': request.user,
-                                 'date': d,
-                                 'subject': request.user.current_subject}
-                groups = {}
-                for lesson in UsalTimetable.objects.filter(**kwargs):
-                    groups[lesson.group] = groups.get(lesson.group, 0) + 1
-                groups = groups.values()
-                if Lesson.objects.filter(grade = request.user.current_grade, **kwargs4lesson).count() != max(groups):
-                    for j in xrange(max(groups) - Lesson.objects.filter(**kwargs4lesson).count()):
-                        t = Lesson(**kwargs4lesson)
-                        t.save()
-                        t.grade.add(request.user.current_grade)
-                        t.save()
-                        LOGGER.debug('Lesson %d for attendance %d created by teacher' %
-                                     (t.id, UsalTimetable.objects.filter(**kwargs)[0].id))
-
-            resultdates = ResultDate.objects.filter(date = d, grades = request.user.current_grade)
-            if resultdates:
-                resultdate = resultdates[0]
-                kwargs4lesson = {
-                    'resultdate': resultdate,
-                    'grade': request.user.current_grade,
-                    'subject': request.user.current_subject,
-                    'teacher': request.user
-                }
-                if not Lesson.objects.filter(**kwargs4lesson):
-                    del kwargs4lesson['grade']
-                    lesson = Lesson(topic = resultdate.name,
-                                    date = resultdate.date,
-                                    **kwargs4lesson)
-                    lesson.save()
-                    lesson.grade.add(request.user.current_grade)
-                    lesson.save()
-                    LOGGER.debug('Lesson %d for resultdate %d created by teacher' %
-                                 (lesson.id, resultdate.id))
-
-        if len(kwargs4lesson) == 0:
-            raise Http404(u'Нет расписания')
-
-        del kwargs4lesson['date']
-        kwargs4lesson['date__gte'] = date_start - timedelta(days = 15)
+        kwargs4lesson = {'teacher': request.user,
+                         'subject': request.user.current_subject,
+                         'date__gte': date_start - timedelta(days = 15),
+        }
+        last_col = []
+        last_date = None
         for lesson in Lesson.objects.filter(**kwargs4lesson).order_by('date'):
-            monthes[lesson.date.month] = (dt.ru_strftime(u'%B', lesson.date),
-                                          monthes[lesson.date.month][1] + 1)
-            lessons_range.append(lesson)
+            new_range = not lesson.subject.groups or \
+                        len(last_col) == int(lesson.subject.groups) or \
+                        lesson.group == '0' or last_date != lesson.date
+
+            if new_range:
+                monthes[lesson.date.month] = (dt.ru_strftime(u'%B', lesson.date),
+                                              monthes[lesson.date.month][1] + 1)
+                if len(last_col):
+                    lessons_range.append(last_col)
+                last_col = []
+            last_col.append(lesson)
+            last_date = lesson.date
 
         for i in monthes.keys():
             if monthes[i][1] == 0:
                 del monthes[i]
         render['lessons'] = lessons_range
-        
+
     return render_to_response(
             '~marks/%s/index.html' % request.user.type.lower(),
             render,

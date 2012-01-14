@@ -39,9 +39,15 @@ class Timetable(models.Model):
     room = models.CharField(u"Кабинет", max_length = 25, null = True, blank = True)
     group = models.CharField(u"Группа", max_length = 1, choices = ( ('1', '1 группа'), ('2', '2 группа') ))
     school = models.ForeignKey(School)
+
     class Meta:
         abstract = True
         ordering = ['number']
+
+    def delete(self, using=None):
+        from odaybook.marks.models import Lesson
+        Lesson.objects.filter(attendance=self).update(attendance=None)
+        super(Timetable, self).delete(using)
 
 class UsalTimetable(Timetable):
     u'''

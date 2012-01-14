@@ -5,6 +5,9 @@
 
 
 from django.db import models
+
+from odaybook.attendance.models import UsalTimetable
+
 from odaybook.userextended.models import Pupil, Teacher, Subject, Grade, School
 
 class Lesson(models.Model):
@@ -26,19 +29,25 @@ class Lesson(models.Model):
                             null = True)
     subject = models.ForeignKey(Subject, verbose_name = u'Предмет')
     grade = models.ManyToManyField(Grade, verbose_name = u'Класс')
+    group = models.CharField(max_length=2, null=True, blank=True, verbose_name=u'Группа')
     file = models.FileField(verbose_name = u'Приложить файл',
                             null = True,
                             blank = True,
                             upload_to = 'lessons')
     resultdate = models.ForeignKey('ResultDate', null = True, blank = True)
-    fullness = models.BooleanField(default = False)
+    fullness = models.BooleanField(default = False, verbose_name=u'Заполнено')
 
     serialize_fields = ['id', 'teacher_id', 'date', 'topic',
                         'task', 'subject_id', 'grade']
     serialize_name = 'lesson'
+
+    attendance = models.ForeignKey(UsalTimetable, null=True)
     
     class Meta:
         ordering = ['-date']
+
+    def __unicode__(self):
+        return str(self.date)
 
     def save(self, safe = False, *args, **kwargs):
         if not safe and not self.fullness:

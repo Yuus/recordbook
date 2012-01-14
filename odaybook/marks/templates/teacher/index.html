@@ -113,22 +113,35 @@ lesson_id = 0;
                 {% endfor %}
             </tr>
             <tr>
-            <th></td>
-            {% for lesson in lessons %}
-                {% if lesson.resultdate %}
-                    <th>{{ lesson.resultdate }}</th>
-                {% else %}
-                    <th><a id="lesson-{{ lesson.id }}" href="#" class="ajax dialog_link{% if not lesson.topic %} red{% endif %}" lesson="{{ lesson.id }}">{{ lesson.date|date:"d" }}</a></th>
-                {% endif %}
+            <th></th>
+            {% for lesson_col in lessons %}
+                {%  with lesson=lesson_col.0 %}
+                    {% if lesson.resultdate %}
+                        <th>{{ lesson.resultdate }}</th>
+                    {% else %}
+                        <th><a id="lesson-{{ lesson.id }}" href="#"
+                               class="ajax dialog_link{% if not lesson.topic %} red{% endif %}"
+                               lesson="{% for l in lesson_col %}{{ l.id }},{% endfor %}">
+                                {{ lesson.date|date:"d" }}
+                        </a></th>
+                    {% endif %}
+                {% endwith %}
             {% endfor %}
         </tr></thead>
         <tbody>
             {% for pupil in user.current_grade.pupils %}
                 <tr class="{% cycle 'gray' '' %}">
                     <td><nobr>{{ pupil.fi }}</nobr></td>
-                    {% for lesson in lessons %}
-                        <td class="for-mark" mark="true" pupil="{{ pupil.id }}" lesson="{{ lesson.id }}" left="p-{{ pupil.id }}-{{ lesson|prev_date:lessons }}" right="p-{{ pupil.id }}-{{ lesson|next_date:lessons }}" up="p-{{ pupil|up_pupil:user.current_grade.pupils }}-{{ lesson.id }}" down="p-{{ pupil|down_pupil:user.current_grade.pupils }}-{{ lesson.id }}" next="p-{{ pupil|first_pupil:user.current_grade.pupils }}-{{ lesson|next_date:lessons }}" id="p-{{ pupil.id }}-{{ lesson.id }}">
-                            {{ pupil|get_mark:lesson }}
+                    {% for lesson_col in lessons %}
+                        <td class="{% if lesson_col|get_lesson:pupil %}for-mark{% endif %}"
+                            mark="true" pupil="{{ pupil.id }}" lesson="{{ lesson_col.0.id }}"
+                            left="p-{{ pupil.id }}-{% prev_date lesson_col lessons pupil %}"
+                            right="p-{{ pupil.id }}-{% next_date lesson_col lessons pupil %}"
+                            up="p-{% up_pupil_and_lesson pupil user.current_grade.pupils lesson_col %}"
+                            down="p-{% down_pupil_and_lesson pupil user.current_grade.pupils lesson_col %}"
+                            next="p-{{ pupil|first_pupil:user.current_grade.pupils }}-{% next_date lesson_col lessons user.current_grade.pupils %}"
+                            id="p-{{ pupil.id }}-{{ lesson_col|get_lesson:pupil }}">
+                            {{ pupil|get_mark:lesson_col }}
                         </td>
                     {% endfor %}
                 </tr>
