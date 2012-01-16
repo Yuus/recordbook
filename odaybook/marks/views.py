@@ -79,7 +79,7 @@ def index(request):
                 if form.is_valid():
                     form.save()
             return HttpResponse('ok')
-        
+
         if request.GET.get('get_lesson_info', False):
             ids = request.GET.get('lesson', '').split(',')
             del ids[len(ids)-1]
@@ -115,7 +115,7 @@ def index(request):
                                                 'mark_value': str(m).strip(),
                                                 'mark_type': m.get_type()
                                                 }, encoding = 'utf-8'))
-        
+
         try:
             request.user.current_grade.get_pupils_for_teacher_and_subject(
                     request.user, request.user.current_subject
@@ -138,7 +138,7 @@ def index(request):
         render['monthes'] = monthes = {}
         for i in xrange(1, 13):
             monthes[i] = ('', 0)
-        
+
         kwargs = {
             'subject': request.user.current_subject,
             'grade': request.user.current_grade

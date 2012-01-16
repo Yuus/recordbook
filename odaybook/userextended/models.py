@@ -186,12 +186,22 @@ class Grade(models.Model):
         self.pupils = []
         for conn in conns:
             if conn.connection == '0':
-                self.pupils += Pupil.objects.filter(grade = self)
+                for pupil in Pupil.objects.filter(grade = self):
+                    pupil.groups[conn.subject_id] = PupilConnection(pupil=pupil, subject=subject, value='0')
+                    self.pupils.append(pupil)
+#                self.pupils += Pupil.objects.filter(grade = self)
             else:
                 pupil_connections = PupilConnection.objects.filter(pupil__grade = self,
                                                                    subject = subject,
                                                                    value = conn.connection)
-                self.pupils += Pupil.objects.filter(id__in = [c.pupil.id for c in pupil_connections])
+                groups = {}
+                for c in pupil_connections:
+                    groups[c.subject_id] = c
+
+                for pupil in Pupil.objects.filter(id__in = [c.pupil.id for c in pupil_connections]):
+                    pupil.groups.update(c)
+                    self.pupils.append(pupil)
+#                self.pupils += Pupil.objects.filter(id__in = [c.pupil.id for c in pupil_connections])
         return self.pupils
 
     def delete(self, *args, **kwargs):
@@ -1046,6 +1056,10 @@ class PupilConnection(models.Model):
 
     class Meta:
         unique_together = (('pupil', 'subject'), )
+
+    def __init__(self, *args, **kwargs):
+        super(PupilConnection, self).__init__(*args, **kwargs)
+        self.group = self.value
 
 class Notify(models.Model):
     '''
