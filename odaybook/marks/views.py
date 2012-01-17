@@ -157,6 +157,7 @@ def index(request):
         kwargs4lesson = {'teacher': request.user,
                          'subject': request.user.current_subject,
                          'date__gte': date_start - timedelta(days = 15),
+                         'grade': request.user.current_grade
         }
         last_col = []
         last_date = None
