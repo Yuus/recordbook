@@ -174,6 +174,8 @@ def index(request):
                 last_col = []
             last_col.append(lesson)
             last_date = lesson.date
+        if len(last_col):
+            lessons_range.append(last_col)
 
         for i in monthes.keys():
             if monthes[i][1] == 0:
