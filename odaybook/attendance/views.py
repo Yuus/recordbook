@@ -136,7 +136,7 @@ def import_timetable(request, school):
             i = 0
             for row in rows:
                 i += 1
-                if len(row) < 4:
+                if len(row) < 5:
                     errors.append({'line': i, 'column': 0, 'error': u'неверное количество столбцов'})
                     continue
                 try:
@@ -147,15 +147,16 @@ def import_timetable(request, school):
                                    'error': u'некорректное значение (невозможно определить кодировку)'})
                     continue
                 row = row.split(';')
+
                 if last_grade != row[0]:
                     workday = 0
                 try:
-                    if int(row[1]) == 1:
+                    if int(row[2]) == 1:
                         workday += 1
                 except ValueError:
                     pass
 
-                number = int(row[1])
+                number = int(row[2])
 
                 last_grade = grade = row[0]
                 try:
@@ -164,37 +165,54 @@ def import_timetable(request, school):
                     errors.append({'line': i, 'column': 0, 'error': u'неизвестный класс %s' % grade})
                     continue
 
-                row[2] = row[2].strip()
-                _subjects = row[2].split(',')
-                subjects = []
-                for sbj in _subjects:
-                    try:
-                        subjects.append(Subject.objects.get(school = school, name = sbj.strip()))
-                    except Subject.DoesNotExist:
-                        errors.append({'line': i, 'column': 2, 'error': u'неизвестный предмет %s' % sbj})
+                try:
+                    subject = Subject.objects.get(school = school, name = row[3].strip())
+                except Subject.DoesNotExist:
+                    errors.append({'line': i, 'column': 4, 'error': u'неизвестный предмет %s' % row[3]})
+                    continue
 
-                rooms = row[3].split(',')
+                try:
+                    int(row[1])
+                except ValueError:
+                    errors.append({'line': i, 'column': 2, 'error': u'неправильный формат номера группы %s' % row[1]})
+                    continue
 
-                ut_kwargs = {'school': school, 'grade': grade, 'workday': workday, 'number': number}
-                if len(subjects) == 1 and len(rooms)==1:
-                    for j in xrange(1, 3):
-                        objects.append(UsalTimetable(subject = subjects[0], room = rooms[0], group = j, **ut_kwargs))
 
-                elif len(subjects) == 1 and len(rooms)==2:
-                    for j in xrange(1, 3):
-                        objects.append(UsalTimetable(subject = subjects[0], room = rooms[j-1], group = j, **ut_kwargs))
+                objects.append(UsalTimetable(
+                    school=school, grade=grade, number=number, subject=subject, room=row[4],
+                    group=row[1], workday=workday
+                ))
 
-                elif (len(subjects) == 2 and len(rooms)==2) or (len(subjects) == 2 and len(rooms)==3):
-                    for j in xrange(1, 3):
-                        objects.append(UsalTimetable(subject = subjects[j-1], room = rooms[j-1],
-                                                     group = j, **ut_kwargs))
-
-                elif len(subjects) == 1 and len(rooms)==3:
-                    for j in xrange(1, 4):
-                        objects.append(UsalTimetable(subject = subjects[0], room = rooms[j-1], group = j, **ut_kwargs))
-
-                else:
-                    errors.append({'line': i, 'column': 0, 'error': u'неверный формат строки'})
+#                _subjects = row[2].split(',')
+#                subjects = []
+#                for sbj in _subjects:
+#                    try:
+#                        subjects.append(Subject.objects.get(school = school, name = sbj.strip()))
+#                    except Subject.DoesNotExist:
+#                        errors.append({'line': i, 'column': 2, 'error': u'неизвестный предмет %s' % sbj})
+#
+#                rooms = row[3].split(',')
+#
+#                ut_kwargs = {'school': school, 'grade': grade, 'workday': workday, 'number': number}
+#                if len(subjects) == 1 and len(rooms)==1:
+#                    for j in xrange(1, 3):
+#                        objects.append(UsalTimetable(subject = subjects[0], room = rooms[0], group = j, **ut_kwargs))
+#
+#                elif len(subjects) == 1 and len(rooms)==2:
+#                    for j in xrange(1, 3):
+#                        objects.append(UsalTimetable(subject = subjects[0], room = rooms[j-1], group = j, **ut_kwargs))
+#
+#                elif (len(subjects) == 2 and len(rooms)==2) or (len(subjects) == 2 and len(rooms)==3):
+#                    for j in xrange(1, 3):
+#                        objects.append(UsalTimetable(subject = subjects[j-1], room = rooms[j-1],
+#                                                     group = j, **ut_kwargs))
+#
+#                elif len(subjects) == 1 and len(rooms)==3:
+#                    for j in xrange(1, 4):
+#                        objects.append(UsalTimetable(subject = subjects[0], room = rooms[j-1], group = j, **ut_kwargs))
+#
+#                else:
+#                    errors.append({'line': i, 'column': 0, 'error': u'неверный формат строки'})
 
             if len(errors) == 0:
                 for obj in objects:
