@@ -199,7 +199,7 @@ class Grade(models.Model):
                     groups[c.subject_id] = c
 
                 for pupil in Pupil.objects.filter(id__in = [c.pupil.id for c in pupil_connections]):
-                    pupil.groups.update(c)
+#                    pupil.groups.update(c)
                     self.pupils.append(pupil)
 #                self.pupils += Pupil.objects.filter(id__in = [c.pupil.id for c in pupil_connections])
         return self.pupils
