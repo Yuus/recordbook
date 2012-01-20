@@ -988,11 +988,18 @@ class Pupil(BaseUser, Scholar):
         from odaybook.curatorship.models import Connection
         if not len(self.groups): self.get_groups()
         try:
-            return Connection.objects.get(
-                Q(connection = self.groups[subject.id].group) | Q(connection = 0),
-                    subject = subject,
-                    grade = self.grade,
-                   ).teacher
+            try:
+                return Connection.objects.get(
+                    Q(connection = self.groups[subject.id].group) | Q(connection = 0),
+                        subject = subject,
+                        grade = self.grade,
+                       ).teacher
+            except Connection.MultipleObjectsReturned:
+                return Connection.objects.filter(
+                    Q(connection = self.groups[subject.id].group) | Q(connection = 0),
+                        subject = subject,
+                        grade = self.grade,
+                    )[0].teacher
         except KeyError:
             return None
         except Connection.DoesNotExist:
@@ -1012,6 +1019,7 @@ class Pupil(BaseUser, Scholar):
 
     class Meta:
         ordering = ['last_name', 'first_name', 'middle_name']
+        unique_together = (('last_name', 'first_name', 'middle_name', 'grade'), )
 
 class Staff(BaseUser, Scholar):
     '''
