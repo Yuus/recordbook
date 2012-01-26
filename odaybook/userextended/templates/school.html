@@ -8,4 +8,12 @@
 
 {% block content %}
 	{% include 'helpers/uniForm.html' %}
+    {%  if user.type == 'Superuser' %}
+        <p>
+            <a href="/administrator/uni/userextended.School/{{ school.id }}/delete/{{ school.id }}/" class="delete" style="color: red;">
+                Удалить школу
+            </a>
+        </p>
+    {%  endif %}
+
 {% endblock %}

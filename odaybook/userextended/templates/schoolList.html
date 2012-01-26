@@ -61,17 +61,11 @@
 <table class="table">
 	{% for school in objects.object_list %}
 		<tr id="sch{{ school.id }}">
-			<td colspan="4">
+			<td>
 				<h2>
-					{{ school.name }} 
-					<a href="/administrator/uni/userextended.School/{{ school.id }}/edit/{{ school.id }}/"><img src="{{ MEDIA_URL}}images/edit.png" /></a>
-					{%  if user.type == 'Superuser' %}
-                        <a href="/administrator/uni/userextended.School/{{ school.id }}/delete/{{ school.id }}/" class="delete"><img src="{{ MEDIA_URL}}images/delete.png" /></a>
-                    {%  endif %}
+					<a href="/administrator/uni/userextended.School/{{ school.id }}/edit/{{ school.id }}/">{{ school.name }}</a>
 				</h2>
 			</td>
-		</tr>
-        <tr>
             <td>
                 {% if school.show.subjects %}
                     <a href="/administrator/uni/userextended.Subject/{{ school.id }}/">Предметы</a>
@@ -100,8 +94,6 @@
 					Ученики
 				{% endif %}
 			</td>
-        </tr>
-		<tr>
             <td>
                 {% if school.show.connections %}
                   <a href="/administrator/uni/curatorship.Connection/{{ school.id }}/">Связки</a>
@@ -125,7 +117,7 @@
 			</td>
 		</tr>
 		<tr>
-			<td colspan="4"><hr /></td>
+			<td colspan="9"><hr /></td>
 		</tr>
 	{% endfor %}
 </table>

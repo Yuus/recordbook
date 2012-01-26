@@ -71,7 +71,7 @@ class Array(object):
         '''
         result = ''
         for row in self.rows:
-            result += ';'.join(['"%s"' % r for r in row]) + '\n'
+            result += ';'.join([('"%s"' % r).encode('cp1251') for r in row]) + '\n'
         return result
 
     def get_header(self):
