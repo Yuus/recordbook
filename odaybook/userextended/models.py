@@ -793,6 +793,7 @@ class Teacher(Scholar, BaseUser):
     class Meta:
         # для классного руководства
         unique_together = ('grade', )
+        ordering = ['last_name', 'first_name', 'middle_name']
 
 class Parent(BaseUser):
     '''
