@@ -958,6 +958,8 @@ class Pupil(BaseUser, Scholar):
             Записывает в свойство groups словарь для каждого предмета, где ключ соотвествует id предмета,
             а значение - номер группы.
         '''
+        if hasattr(self, 'groups') and len(self.groups):
+            return
         self.groups = {}
         for subject in self.get_subjects():
             try:

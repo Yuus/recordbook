@@ -29,7 +29,7 @@
         <a href="?export_to_csv=1" style="padding-left: 10px;">Экспортировать в CSV</a>
     </form>
     {% with hide_export_link=1 %}
+        <div id="chart_div" style="float: right;"></div>
         {% include 'report_form.html' %}
-        <div id="chart_div" style=""></div>
     {% endwith %}
 {% endblock %}

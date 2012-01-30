@@ -12,7 +12,7 @@ LOGGER = logging.getLogger(__name__)
 
 def _get_lesson(lesson_col, pupil):
     LOGGER.info('_get_lesson start')
-#    pupil.get_groups()
+    pupil.get_groups()
     for lesson in lesson_col:
         if lesson.group == None or lesson.group == '0' or (lesson.subject_id in pupil.groups and lesson.group == pupil.groups[lesson.subject.id].group):
             LOGGER.info('_get_lesson end')
