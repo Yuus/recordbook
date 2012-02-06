@@ -1022,7 +1022,6 @@ class Pupil(BaseUser, Scholar):
 
     class Meta:
         ordering = ['last_name', 'first_name', 'middle_name']
-        unique_together = (('last_name', 'first_name', 'middle_name', 'grade'), )
 
 class Staff(BaseUser, Scholar):
     '''
