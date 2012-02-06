@@ -7,6 +7,10 @@
 </script>
 
 {% block js_ready %}
+$("#id_start").datepicker($.datepicker.regional["ru"]);
+$("#id_end").datepicker($.datepicker.regional["ru"]);
+$( "#radio" ).buttonset();
+
 lesson_id = 0;
 	$('#dialog').dialog({
 		autoOpen: false,
@@ -62,6 +66,13 @@ lesson_id = 0;
 
 
 {% block content %}
+
+    <form method="get" action=".">
+        <table class="form">
+            {{ stat_form }}
+            <tr><td colspan="2"><input type="submit" value="Показать" /></td></tr>
+        </table>
+    </form>
 
 	<div id="dialog" title="Заполните информацию об уроке">
 		<form action="." method="get" id="lesson_form" style="display: none;">
