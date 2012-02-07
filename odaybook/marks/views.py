@@ -128,11 +128,20 @@ def index(request):
                     context_instance = RequestContext(request))
 
         from pytils import dt
-        try:
-            day, month, year = request.GET.get('date', '').split('.')
-            date_start = date(day = day, month = month, year = year)
-        except ValueError:
-            date_start = date.today()
+#        try:
+#            day, month, year = request.GET.get('date', '').split('.')
+#            date_start = date(day = day, month = month, year = year)
+#        except ValueError:
+#            date_start = date.today()
+        #from datetime import timedelta
+        date_start = date.today() - timedelta(days = 15)
+        date_end = date.today() + timedelta(days = 1)
+        render['stat_form'] = form = StatForm(request.GET)
+        if form.is_valid():
+            date_start = form.cleaned_data['start']
+            date_end = form.cleaned_data['end']
+        else:
+            render['stat_form'] = StatForm()
 
         lessons_range = []
         render['monthes'] = monthes = {}
@@ -156,8 +165,9 @@ def index(request):
 
         kwargs4lesson = {'teacher': request.user,
                          'subject': request.user.current_subject,
-                         'date__gte': date_start - timedelta(days = 15),
-                         'grade': request.user.current_grade
+                         'date__gte': date_start,
+                         'grade': request.user.current_grade,
+                         'date__lte': date_end
         }
         last_col = []
         last_date = None
