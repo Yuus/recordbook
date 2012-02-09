@@ -130,6 +130,7 @@ def import_timetable(request, school):
         if form.is_valid():
             workday = 0
             last_grade = None
+            last_number = None
             render['errors'] = errors = []
             objects = []
             rows = csv.reader(form.cleaned_data['file'], delimiter = ';')
@@ -151,12 +152,13 @@ def import_timetable(request, school):
                 if last_grade != row[0]:
                     workday = 0
                 try:
-                    if int(row[2]) == 1:
+                    if int(row[2]) == 1 and last_number != 1:
                         workday += 1
                 except ValueError:
                     pass
 
                 number = int(row[2])
+                last_number = number
 
                 last_grade = grade = row[0]
                 try:
