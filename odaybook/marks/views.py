@@ -8,6 +8,7 @@ from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.paginator import Paginator
 from django.conf import settings
+from django.db.models import Q
 from django.contrib import messages
 
 from odaybook.utils import PlaningError
@@ -152,16 +153,14 @@ def index(request):
             'subject': request.user.current_subject,
             'grade': request.user.current_grade
         }
-        conn = Connection.objects.filter(teacher = request.user, **kwargs)
+        conn = Connection.objects.filter(teacher=request.user, **kwargs)
         if not conn:
             messages.error(request, u'Нет связок в выбранном сочетании предмет-класс')
             return render_to_response(
                     '~marks/%s/index.html' % request.user.type.lower(),
                     render,
                     context_instance = RequestContext(request))
-        conn = conn[0]
-        if conn.connection != '0':
-            kwargs['group'] = conn.connection
+#        conn = conn[0]
 
         kwargs4lesson = {'teacher': request.user,
                          'subject': request.user.current_subject,
@@ -169,11 +168,17 @@ def index(request):
                          'grade': request.user.current_grade,
                          'date__lte': date_end
         }
+
+        args = [Q(group=c.connection) for c in conn]
+
+#        if conn[0].connection != '0':
+#            kwargs4lesson['group'] = conn[0].connection
+
         last_col = []
         last_date = None
-        for lesson in Lesson.objects.filter(**kwargs4lesson).order_by('date'):
+        for lesson in Lesson.objects.filter(*args, **kwargs4lesson).order_by('date'):
             new_range = not lesson.subject.groups or \
-                        len(last_col) == int(lesson.subject.groups) or \
+                        (len(last_col) == conn.count() and conn[0].connection != '0') or \
                         lesson.group == '0' or last_date != lesson.date
 
             if new_range:
