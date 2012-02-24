@@ -14,7 +14,9 @@
             {% endif %}
         </th>
 	{% endfor %}
+  {% comment %}
     <th>Средний балл</th>
+  {% endcomment %}
     <th>Учителя</th>
   </tr>
   </thead>
@@ -35,7 +37,9 @@
                     {% for m in mark %}<div class="mark-{{ m.get_type }}" style="display:inline">{{ m }}</div>{% if not forloop.last %},&nbsp;{% endif %}{% endfor %}
                 </td>
 			{% endfor %}
+        {% comment %}
 			<td><div class="mark-{{ subject.4 }}">{{ subject.2|floatformat:"-2"|number_format }}</div></td>
+	    {% endcomment %}
     		<td><div class="teacher">
                 {% if user.type == 'Parent' %}
                     <a href="/teachers/{{ subject.3.id }}/">{{ subject.3.fio|default:"не указан" }}</a>

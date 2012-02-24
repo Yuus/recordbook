@@ -9,9 +9,11 @@
               <th class="ajax_link">
                   <span>Ученики</span>
               </th>
+              {% comment %}
               <th class="ajax_link">
                   <span>Средний балл</span>
               </th>
+              {% endcomment %}
           </tr>
       </thead>
       <tbody>
@@ -25,11 +27,13 @@
                   <td>
                       {{ pupil.fi }}
                   </td>
+                  {% comment %}
                   <td>
                       <div class="mark-{{ pupil.get_marks_avg_type }}">
                           {{ pupil.get_marks_avg|floatformat:"-2"|number_format }}
                       </div>
                   </td>
+                  {% endcomment %}
               </tr>
   		{% endfor %}
       </tbody>
