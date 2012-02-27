@@ -51,7 +51,8 @@ class Lesson(models.Model):
 
     def save(self, safe = False, *args, **kwargs):
         if not safe and not self.fullness:
-            if self.topic and Mark.objects.filter(lesson = self).count() > 4:
+            if Mark.objects.filter(lesson = self).count() > 4:
+            #if self.topic and Mark.objects.filter(lesson = self).count() > 4:
                 self.fullness = True
         super(Lesson, self).save(*args, **kwargs)
 
@@ -94,7 +95,8 @@ class Mark(models.Model):
     def save(self, *args, **kwargs):
         from odaybook.userextended.models import Notify
         if not self.lesson.fullness:
-            if self.lesson.topic and Mark.objects.filter(lesson = self.lesson) > 4:
+            #if self.lesson.topic and Mark.objects.filter(lesson = self.lesson) > 4:
+            if Mark.objects.filter(lesson = self.lesson) > 4:
                 self.lesson.fullness = True
                 self.lesson.save(safe = True)
         super(Mark, self).save(*args, **kwargs)
