@@ -13,7 +13,7 @@
     <!--[if IE 6]><link href="{{ MEDIA_URL }}css/login/ie6.css" media="screen" rel="stylesheet" type="text/css" />
     <![endif]-->
     <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico"/>
-    <title>Система электронных дневников города Сочи</title>
+    <title>Система электронных дневников</title>
 </head>
 <body> 
     <div id="page-content"> 
@@ -21,7 +21,7 @@
   <div id="logo"> 
      {{ user.private_salute }}
   </div>
-  <h3>Вас приветствует система электронных дневников города Сочи</h3>
+  <h3>{{ welcome_text.value|default:"" }}</h3>
   {% if form.errors %}
 	  <div class="errorExplanation" id="errorExplanation">
 	  	<h2>Неправильное имя пользователя или пароль</h2>
@@ -44,9 +44,7 @@
     	<i>Родителю:</i> <a href="/accounts/register-clerk/?auto_login=1&is_parent=1">пройдите регистрацию</a>
     </p>
 <hr />
-По всем вопросам, связанным с использованием дневника, можно
-обращаться по адресу <a href="mailto:kravmv@gmail.com">kravmv@gmail.com</a> или по телефону <nobr>8 (8622)
-54-08-84</nobr> &mdash; Кравцова Мария Владимировна, начальник отдела информатизации образования.
+{{ help_text.value|default:""|safe }}
 </div> 
   </div>
     <div style="margin: 0 20px">

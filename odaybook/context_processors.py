@@ -58,6 +58,8 @@ def environment(request):
                 pass
     render['second_copyright'] = Option.objects.get(key='second_copyright')
     render['google_analytics_code'] = Option.objects.get(key='google_analytics_code')
+    render['welcome_text'] = Option.objects.get(key='welcome_text')
+    render['help_text'] = Option.objects.get(key='help_text')
     render['current_year'] = date.today().year
     return render
 
