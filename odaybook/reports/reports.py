@@ -33,7 +33,7 @@ def get_fillability(lessons):
             'not_filled_more_15_days_percent': 0,
         }
     else:
-        result['filled'] = lessons.filter(fullness = True).count()
+        result['filled'] = lessons.filter(fullness=True).count()
         result['filled_percent'] = 100*result['filled']/a
         result['not_filled_from_10_to_15_days'] = lessons.filter(fullness=False, date__range=(
                                                   datetime.date.today() - datetime.timedelta(days=15),

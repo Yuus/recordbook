@@ -176,7 +176,7 @@ def index(request):
 
         last_col = []
         last_date = None
-        for lesson in Lesson.objects.filter(*args, **kwargs4lesson).order_by('date'):
+        for lesson in Lesson.objects.filter(reduce(lambda x, y: x | y, args), **kwargs4lesson).order_by('date'):
             new_range = not lesson.subject.groups or \
                         (len(last_col) == conn.count() and conn[0].connection != '0') or \
                         lesson.group == '0' or last_date != lesson.date
