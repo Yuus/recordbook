@@ -1023,7 +1023,7 @@ class Pupil(BaseUser, Scholar):
         return set([connection.subject for connection in self.get_connections()])
 
     class Meta:
-        ordering = ['last_name', 'first_name', 'middle_name']
+        ordering = ["grade", 'last_name', 'first_name', 'middle_name']
 
 class Staff(BaseUser, Scholar):
     '''
