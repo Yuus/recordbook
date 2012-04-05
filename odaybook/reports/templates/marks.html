@@ -29,7 +29,7 @@
                 {% if user.type == 'Parent' %}
                     <a href="/reports/marks/{{ subject.0.id }}/">{{ subject.0 }}</a>
                 {% else %}
-                    {{ subject.0 }}
+                    <span subject-id="{{ subject.0.id }}">{{ subject.0 }}</span>
                 {% endif %}
             </td>
 			{% for mark in subject.1 %}

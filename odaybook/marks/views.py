@@ -1,6 +1,7 @@
 # -*- coding: UTF-8 -*-
 from datetime import date, timedelta
 import logging
+from django.core.mail import mail_admins
 
 from django.template import RequestContext
 from django.shortcuts import render_to_response, get_object_or_404, get_list_or_404
@@ -111,6 +112,10 @@ def index(request):
             else:
                 m.mark = int(mark)
             m.save()
+            pupil.get_groups()
+            a = pupil.groups
+            if lesson.group != pupil.groups[lesson.subject_id].value:
+                mail_admins("lesson cognetive dissonans", "Lesson id#%d, mark id#%d" % (lesson.id, m.id))
             return HttpResponse(demjson.encode({'id': tr_id,
                                                 'mark': get_mark(pupil, [lesson,]),
                                                 'mark_value': str(m).strip(),
@@ -178,7 +183,7 @@ def index(request):
         last_date = None
         for lesson in Lesson.objects.filter(reduce(lambda x, y: x | y, args), **kwargs4lesson).order_by('date'):
             new_range = not lesson.subject.groups or \
-                        (len(last_col) == conn.count() and conn[0].connection != '0') or \
+                        (len(last_col) == conn.count() and conn[0].connection != "0") or \
                         lesson.group == '0' or last_date != lesson.date
 
             if new_range:

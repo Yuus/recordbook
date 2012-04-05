@@ -36,10 +36,14 @@ class Connection(models.Model):
                                   max_length = 1,
                                   choices = GROUPS,
                                   default = '0')
+
     class Meta:
         ordering = ['teacher__last_name', 'teacher__first_name', 'teacher__middle_name']
         unique_together = (('teacher', 'subject', 'grade', 'connection'), )
         verbose_name = u'Связь'
+
+    def __unicode__(self):
+        return "Connection #%d" % self.id
 
 class Request(models.Model):
     '''

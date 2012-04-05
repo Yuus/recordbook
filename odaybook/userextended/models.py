@@ -1073,6 +1073,9 @@ class PupilConnection(models.Model):
         super(PupilConnection, self).__init__(*args, **kwargs)
         self.group = self.value
 
+    def __unicode__(self):
+        return str(self.id)
+
 class Notify(models.Model):
     '''
         Уведомления о несоблюдении норм заполняемости дневников.
