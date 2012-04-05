@@ -114,7 +114,7 @@ def index(request):
             m.save()
             pupil.get_groups()
             a = pupil.groups
-            if lesson.group != pupil.groups[lesson.subject_id].value:
+            if lesson.subject_id in pupil.groups and lesson.group != pupil.groups[lesson.subject_id].value:
                 mail_admins("lesson cognetive dissonans", "Lesson id#%d, mark id#%d" % (lesson.id, m.id))
             return HttpResponse(demjson.encode({'id': tr_id,
                                                 'mark': get_mark(pupil, [lesson,]),
