@@ -149,10 +149,15 @@ def index(request):
         else:
             render['stat_form'] = StatForm()
 
+        def _get_month_key(dt):
+            return int("%d%s" % (dt.year, str(dt.month).rjust(2, "0")))
+
         lessons_range = []
         render['monthes'] = monthes = {}
-        for i in xrange(1, 13):
-            monthes[i] = ('', 0)
+        month = date.today() - timedelta(days=365)
+        while month<date.today() + timedelta(days=30):
+            monthes[_get_month_key(month)] = ('', 0)
+            month += timedelta(weeks=4)
 
         kwargs = {
             'subject': request.user.current_subject,
@@ -187,8 +192,8 @@ def index(request):
                         lesson.group == '0' or last_date != lesson.date
 
             if new_range:
-                monthes[lesson.date.month] = (dt.ru_strftime(u'%B', lesson.date),
-                                              monthes[lesson.date.month][1] + 1)
+                monthes[_get_month_key(lesson.date)] = (dt.ru_strftime(u'%B', lesson.date),
+                                              monthes[_get_month_key(lesson.date)][1] + 1)
                 if len(last_col):
                     lessons_range.append(last_col)
                 last_col = []

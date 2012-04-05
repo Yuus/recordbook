@@ -119,7 +119,7 @@ lesson_id = 0;
         <thead>
             <tr>
                 <th style="border: none;"></th>
-                {% for month, value in monthes.items %}
+                {% for month, value in monthes.items|sort %}
                     <th style="border-bottom: none; border-right: 1px solid; border-left: 1px solid; text-align: center" colspan="{{ value.1 }}">{{ value.0 }}</th>
                 {% endfor %}
             </tr>
