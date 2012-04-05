@@ -145,7 +145,7 @@ lesson_id = 0;
                     <td><nobr>{{ pupil.fi }}</nobr></td>
                     {% for lesson_col in lessons %}
                         <td class="{% if lesson_col|get_lesson:pupil %}for-mark{% endif %}"
-                            mark="true" pupil="{{ pupil.id }}" lesson="{{ lesson_col.0.id }}"
+                            mark="true" pupil="{{ pupil.id }}" lesson="{{ lesson_col|get_lesson:pupil }}"
                             left="p-{{ pupil.id }}-{% prev_date lesson_col lessons pupil %}"
                             right="p-{{ pupil.id }}-{% next_date lesson_col lessons pupil %}"
                             up="p-{% up_pupil_and_lesson pupil user.current_grade.pupils lesson_col %}"
