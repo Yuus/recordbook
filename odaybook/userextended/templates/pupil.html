@@ -9,7 +9,7 @@
 {% endblock %}
 
 {% block content %}
-<form method="post" action="." enctype="multipart/form-data">{% csrf_token %}
+<form method="post" action="?paginator_page={{ paginator_page }}&order_by={{ order_by }}" enctype="multipart/form-data">{% csrf_token %}
 <table class="table"><tr><td>
 	<fieldset>
 		<legend>Общая информация</legend>

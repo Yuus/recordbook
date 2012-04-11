@@ -7,7 +7,7 @@
 		{{ objects.paginator.num_pages }}., // общее число страниц
 		10, // число страниц, видимых одновременно
 		{{ objects.number }}, // номер текущей страницы
-		"?page=" // url страниц
+		"?order_by={{ order_by }}&page=" // url страниц
 	);
 </script>
 {% load pytils_numeral %}

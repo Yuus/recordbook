@@ -102,6 +102,9 @@ def objectList(request, app, model, filter_id = None):
         objects = Object.objects.all()
 
     objects = objects.filter(**ext)
+    if request.GET.get("order_by", False):
+        objects = objects.order_by(request.GET.get("order_by"))
+        render["order_by"] = request.GET.get("order_by")
     paginator = Paginator(objects, settings.PAGINATOR_OBJECTS)
     try:
         page = int(request.GET.get('page', '1'))
@@ -180,6 +183,7 @@ def objectEdit(request, app, model, mode, filter_id = None, id = 0):
     if filter_id:
         url += str(filter_id) + '/'
     url += '?page=%s' % request.GET.get('paginator_page', '1')
+    url += "&order_by=%s" % request.GET.get("order_by", "")
 
     render.update(ext)
 
@@ -396,15 +400,6 @@ def clerkAppendRole(request):
                 render['error'] = u'Ничего не найдено.'
                 return render_to_response('~userextended/clerkAppendRole.html',
                                           render, context_instance = RequestContext(request))
-#            if 'Pupil' in clerk.get_roles_list():
-#                render['error'] = u'Этот пользователь ученик.'
-#                return render_to_response('~userextended/clerkAppendRole.html', render,
-#                                          context_instance = RequestContext(request))
-#            if clerk.has_role('Teacher', school):
-#                render['error'] = u'Этот пользователь уже приписан к данной школе.'
-#                return render_to_response('~userextended/clerkAppendRole.html', render,
-#                                          context_instance = RequestContext(request))
-
             render['objects'] = objects
 
     elif request.GET.get('step', '1') == '2':

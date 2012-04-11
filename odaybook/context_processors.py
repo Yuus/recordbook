@@ -45,6 +45,7 @@ def environment(request):
     render = {}
 
     render['paginator_page'] = request.GET.get('paginator_page', 1)
+    render["order_by"] = request.GET.get("order_by", "")
 
     user = request.user
     if request.user.is_authenticated():

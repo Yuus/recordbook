@@ -19,9 +19,9 @@
 {% if objects.object_list %}
 <table class="table">
 	<thead>
-		<th>Ученик</th>
+		<th><a href="?page={{ objects.number }}&order_by=last_name">Ученик</a></th>
 		{#<th>Логин</th>#}
-		<th>Класс</th>
+		<th><a href="?page={{ objects.number }}&order_by=grade">Класс</a></th>
 		<th>Действия</th>
 	</thead>
 	{% for object in objects.object_list %}
