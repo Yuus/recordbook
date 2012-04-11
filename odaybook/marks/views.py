@@ -120,7 +120,7 @@ def index(request):
                                                 'mark': get_mark(pupil, [lesson,]),
                                                 'mark_value': str(m).strip(),
                                                 'mark_type': m.get_type()
-                                                }, encoding = 'utf-8'))
+                                                }, encoding='utf8'))
 
         try:
             request.user.current_grade.get_pupils_for_teacher_and_subject(

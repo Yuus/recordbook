@@ -239,6 +239,8 @@ class Subject(models.Model):
 
     class Meta:
         ordering = ['name']
+        unique_together = (("name", "school", "groups"),)
+
 
 class SearchManager(models.Manager):
     '''

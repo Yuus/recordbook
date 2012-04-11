@@ -524,7 +524,10 @@ def set_current_pupil(request, id):
     if pupil in request.user.pupils.all():
         request.user.current_pupil = pupil
         request.user.save()
-        return HttpResponseRedirect(request.META['HTTP_REFERER'])
+        if request.META['HTTP_REFERER']:
+            return HttpResponseRedirect(request.META['HTTP_REFERER'])
+        else:
+            return HttpResponseRedirect("/")
     else:
         raise Http404(u'Ученик не найден')
 
