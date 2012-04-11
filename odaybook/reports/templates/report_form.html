@@ -4,7 +4,7 @@
 <table class="table">
 	<thead>
 		{% for row in rows.get_header %}
-            <th>{{ row }}</th>
+            <th>{{ row|safe }}</th>
         {% endfor %}
 	</thead>
     <tbody>

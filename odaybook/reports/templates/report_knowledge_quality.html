@@ -1,0 +1,40 @@
+{% extends '~reports/page.html' %}
+
+{% block  js_ready %}
+    $("#id_start").datepicker($.datepicker.regional["ru"]);
+    $("#id_end").datepicker($.datepicker.regional["ru"]);
+    $( "#radio" ).buttonset();
+{% endblock %}
+z
+{% block content %}
+    <form method="get" action=".">
+        <table class="table form">
+            {% for field in gradesSelectForm %}
+                <tr>
+                    <td class="label"><label for="{{ field.label }}">{{ field.label_tag }}:</label></td>
+                    <td>{{ field }}</td>
+                    <td>
+                        {% if field.errors %}<div class="error_text">{{ field.errors }}</div>{% endif %}
+                        {% if field.help_text %}<div class="help_text">{{ field.help_text}}</div>{% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+            {% for field in form %}
+                <tr>
+                    <td class="label"><label for="{{ field.label }}">{{ field.label_tag }}:</label></td>
+                    <td>{{ field }}</td>
+                    <td>
+                        {% if field.errors %}<div class="error_text">{{ field.errors }}</div>{% endif %}
+                        {% if field.help_text %}<div class="help_text">{{ field.help_text}}</div>{% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+            <tr>
+                <td colspan="2"><input type="submit" value="Показать" /></td>
+            </tr>
+        </table>
+    </form>
+    {% with hide_export_link=1 %}
+        {% include 'report_form.html' %}
+    {% endwith %}
+{% endblock %}

@@ -9,12 +9,13 @@ from django.core.paginator import Paginator
 from django.contrib.auth.decorators import login_required, user_passes_test
 
 from odaybook import settings
-from odaybook.userextended.models import Grade, Subject, School, Pupil, MembershipChange
+from odaybook.userextended.models import Grade, Subject, School, Pupil, MembershipChange, Teacher
 from odaybook.attendance.models import UsalTimetable
 from odaybook.marks.forms import StatForm
 from odaybook.marks.models import Lesson, Mark
 from reports import get_fillability
 from forms import SchoolSelectForm
+from smart_selects.form_fields import SimpleChainedModelChoiceField
 
 class Array(object):
     '''
@@ -465,6 +466,181 @@ def view_marks(request, id):
             render,
             context_instance = RequestContext(request))
 
+
+
+@login_required
+@user_passes_test(lambda u: u.type in ["Superviser", "Superuser", "Teacher"])
+def report_knowledge_quality(request):
+    '''
+        Отчёт с качеством знаний.
+    '''
+    from django import forms
+
+    class GradesSelectForm(forms.Form):
+        '''
+            Выбор классов учителя.
+
+            Используется только здесь.
+        '''
+        from smart_selects.form_fields import ChainedModelChoiceField, SimpleChainedModelChoiceField
+        school = forms.ModelChoiceField(queryset = School.objects.all(),
+            label = u'Школа',
+            required = False)
+
+        subject = ChainedModelChoiceField(app_name = 'userextended',
+            model_name = 'Subject',
+            chain_field = 'school',
+            model_field = 'school',
+            queryset = Subject.objects.all(),
+            label = u'Предмет',
+#            required = False
+        )
+
+        teacher = ChainedModelChoiceField(app_name = 'userextended',
+            model_name = 'Teacher',
+            chain_field = 'subject',
+            model_field = 'subjects',
+            queryset = Teacher.objects.all(),
+            label = u'Учитель',
+#            required = False,
+        )
+
+        def __init__(self, school = None, subjects = None, subject = None, teacher = None, *args, **kwargs):
+            super(GradesSelectForm, self).__init__(*args, **kwargs)
+            if school:
+                del self.fields['school']
+            if subjects:
+                self.fields['subject'] = forms.ModelChoiceField(queryset=subjects, label = u'Предмет')
+            else:
+                self.fields['subject'] = forms.ModelChoiceField(queryset=Subject.objects.filter(school=school),
+                    label = u'Предмет')
+#            if subject:
+#                del self.fields["teacher"]
+#                del self.fields['subject']
+#                self.fields['teacher'] = forms.ModelChoiceField(queryset = Teacher.objects.filter(subjects = subject),
+#                    label = u'Преподаватель')
+            if teacher:
+                if "school" in self.fields:
+                    del self.fields['school']
+#                del self.fields['subject']
+                del self.fields['teacher']
+
+#            a = self.fields
+#            assa
+
+    render = {}
+
+    rows = Array()
+    rows.insert_row()
+    rows.append_cols(u"Класс",
+        u"Всего", u"&laquo;2&raquo;", u"&laquo;3&raquo;", u"&laquo;4&raquo;", u"&laquo;5&raquo;",
+        u"Качество", u"Обученность", u"Пропусков", u"Среднее",
+    )
+    all = {
+        "all": 0,
+        "marks_2": 0,
+        "marks_3": 0,
+        "marks_4": 0,
+        "marks_5": 0,
+        "quality": 0,
+        "trained": 0,
+        "absence": 0,
+        "avg": 0,
+    }
+
+    school = subjects = subject = teacher = None
+
+    if request.user.type == "Teacher":
+        subjects = [s.id for s in request.user.subjects.all()]
+
+        if request.user.edu_admin:
+            subjects += [s.id for s in Subject.objects.filter(school=request.user.school)]
+        else:
+            teacher = request.user
+
+        school = request.user.school
+
+        subjects = set(subjects)
+        if not len(subjects):
+            raise Http404()
+        else:
+            subjects = Subject.objects.filter(id__in=subjects)
+
+    elif request.user.type == "Superviser":
+        pass
+
+
+    if request.GET.get("subject", False):
+        subject = get_object_or_404(Subject, id=request.GET.get("subject", 0))
+
+
+    render['gradesSelectForm'] = grades_select_form = GradesSelectForm(
+        school=school,
+#        subject=subject,
+        subjects=subjects,
+        teacher=teacher,
+        data=request.GET,
+    )
+
+    start = datetime.date.today() - datetime.timedelta(weeks = 2)
+    end = datetime.date.today() + datetime.timedelta(days = 1)
+    render['form'] = form = StatForm(request.GET)
+    if form.is_valid():
+        start = form.cleaned_data['start']
+        end = form.cleaned_data['end']
+    else:
+        render['form'] = StatForm()
+
+
+    if grades_select_form.is_valid() or teacher:
+        teacher = render['pupil'] = teacher or grades_select_form.cleaned_data["teacher"]
+        if grades_select_form.is_valid():
+            render['params'] = {}
+            for param in 'school', 'teacher', 'subject':
+                render['params'][param] = request.GET.get(param, None)
+
+            for grade in teacher.get_grades_for_marks():
+                rows.insert_row()
+
+                rows.append_col(unicode(grade))
+
+                marks = Mark.objects.filter(pupil__grade=grade)
+
+                rows.append_col(marks.count())
+
+                marks_row = {
+                    2: marks.filter(mark=2).count(),
+                    3: marks.filter(mark=3).count(),
+                    4: marks.filter(mark=4).count(),
+                    5: marks.filter(mark=5).count(),
+                }
+
+                rows.append_col(marks_row[2])
+                rows.append_col(marks_row[3])
+                rows.append_col(marks_row[4])
+                rows.append_col(marks_row[5])
+
+                rows.append_col(100*(marks_row[4] + marks_row[5])/sum(marks_row.values()))
+                rows.append_col(100*(marks_row[3] + marks_row[4] + marks_row[5])/sum(marks_row.values()))
+
+                rows.append_col(marks.filter(absent=True).count())
+
+                rows.append_col(sum([key*float(item) for key, item in marks_row.items()])/sum(marks_row.values()))
+
+            render['rows'] = rows
+            render['all'] = all
+
+
+    else:
+        render['gradesSelectForm'] = GradesSelectForm(school=school,
+            subject=subject,
+            subjects=subjects,
+            teacher=teacher,
+            data=request.GET,
+        )
+
+    return render_to_response('~reports/report_knowledge_quality.html', render,
+        context_instance = RequestContext(request))
 
 
 

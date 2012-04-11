@@ -58,11 +58,17 @@ class ChainedSelect(Select):
         final_choices=[]
         if value:
             item = self.queryset.filter(pk=value)[0]
-            pk = getattr(item, self.model_field+"_id")
-            filter={self.model_field:pk}
-            filtered = get_model( self.app_name, self.model_name).objects.filter(**filter)
-            for choice in filtered:
-                final_choices.append((choice.pk, unicode(choice)))
+            if hasattr(item, self.model_field+"_id"):
+                pk = getattr(item, self.model_field+"_id")
+                filter = {self.model_field: pk}
+                filtered = get_model( self.app_name, self.model_name).objects.filter(**filter)
+                for choice in filtered:
+                    final_choices.append((choice.pk, unicode(choice)))
+            elif hasattr(item, self.model_field):
+                filter = {self.model_field + "__in": [i.id for i in getattr(item, self.model_field).all()]}
+                filtered = get_model(self.app_name, self.model_name).objects.filter(**filter)
+                for choice in filtered:
+                    final_choices.append((choice.pk, unicode(choice)))
         for choice in self.choices:
             self.choices = [choice]
             break
