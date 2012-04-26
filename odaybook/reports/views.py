@@ -11,7 +11,7 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from odaybook import settings
 from odaybook.userextended.models import Grade, Subject, School, Pupil, MembershipChange, Teacher
 from odaybook.attendance.models import UsalTimetable
-from odaybook.marks.forms import StatForm
+from odaybook.marks.forms import StatForm, ResultDatesForm
 from odaybook.marks.models import Lesson, Mark
 from reports import get_fillability
 from forms import SchoolSelectForm
@@ -534,7 +534,9 @@ def report_knowledge_quality(request):
     rows.insert_row()
     rows.append_cols(u"Класс",
         u"Всего", u"&laquo;2&raquo;", u"&laquo;3&raquo;", u"&laquo;4&raquo;", u"&laquo;5&raquo;",
-        u"Качество", u"Обученность", u"Пропусков", u"Среднее",
+        u"Качество", u"Обученность",
+#        u"Пропусков",
+        u"Среднее",
     )
     all = {
         "all": 0,
@@ -582,14 +584,12 @@ def report_knowledge_quality(request):
         data=request.GET,
     )
 
-    start = datetime.date.today() - datetime.timedelta(weeks = 2)
-    end = datetime.date.today() + datetime.timedelta(days = 1)
-    render['form'] = form = StatForm(request.GET)
+    dates = []
+    render['form'] = form = ResultDatesForm(dates_queryset={"school": request.user.school},data=request.GET)
     if form.is_valid():
-        start = form.cleaned_data['start']
-        end = form.cleaned_data['end']
+        dates = form.cleaned_data["dates"]
     else:
-        render['form'] = StatForm()
+        render['form'] = ResultDatesForm(dates_queryset={"school": request.user.school})
 
 
     if grades_select_form.is_valid() or teacher:
@@ -604,7 +604,7 @@ def report_knowledge_quality(request):
 
                 rows.append_col(unicode(grade))
 
-                marks = Mark.objects.filter(pupil__grade=grade)
+                marks = Mark.objects.filter(pupil__grade=grade, lesson__resultdate__in=dates)
 
                 rows.append_col(marks.count())
 
@@ -620,12 +620,18 @@ def report_knowledge_quality(request):
                 rows.append_col(marks_row[4])
                 rows.append_col(marks_row[5])
 
-                rows.append_col(100*(marks_row[4] + marks_row[5])/sum(marks_row.values()))
-                rows.append_col(100*(marks_row[3] + marks_row[4] + marks_row[5])/sum(marks_row.values()))
+                if sum(marks_row.values())>0:
+                    rows.append_col(100*(marks_row[4] + marks_row[5])/sum(marks_row.values()))
+                    rows.append_col(100*(marks_row[3] + marks_row[4] + marks_row[5])/sum(marks_row.values()))
+#                    rows.append_col(marks.filter(absent=True).count())
+                    rows.append_col(sum([key*float(item) for key, item in marks_row.items()])/sum(marks_row.values()))
+                else:
+                    rows.append_col(0)
+                    rows.append_col(0)
+#                    rows.append_col(marks.filter(absent=True).count())
+                    rows.append_col(0)
 
-                rows.append_col(marks.filter(absent=True).count())
 
-                rows.append_col(sum([key*float(item) for key, item in marks_row.items()])/sum(marks_row.values()))
 
             render['rows'] = rows
             render['all'] = all

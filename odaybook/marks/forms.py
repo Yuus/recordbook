@@ -35,6 +35,13 @@ class StatForm(forms.Form):
                           label = u'Дата окончания периода',
                           initial = date.today())
 
+class ResultDatesForm(forms.Form):
+
+    def __init__(self, dates_queryset, *args, **kwargs):
+        super(ResultDatesForm, self).__init__(*args, **kwargs)
+        self.fields["dates"].queryset = self.fields["dates"].queryset.filter(**dates_queryset)
+
+    dates = forms.ModelMultipleChoiceField(queryset=ResultDate.objects.all(), label=u"Периоды")
 
 class ResultDateForm(forms.ModelForm):
     '''

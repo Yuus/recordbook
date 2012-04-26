@@ -64,10 +64,10 @@ def objectList(request, app, model, filter_id = None):
             else:
                 ext['school'] = None
     elif app_model == 'marks.ResultDate':
-        if request.user.type == 'Superuser':
+        if request.user.type == 'Superuser' and not filter_id:
             ext['school'] = None
         else:
-            ext['school'] = request.user.school
+            ext['school'] = get_object_or_404(School, id = filter_id)
     else:
         if request.user.type == 'Teacher':
             ext['school'] = request.user.school
