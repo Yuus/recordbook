@@ -47,6 +47,8 @@ def objectList(request, app, model, filter_id = None):
     
     if app_model == 'userextended.School':
         if request.user.type == 'Teacher':
+            if not request.user.edu_admin:
+                raise Http404()
             ext['id'] = request.user.school.id
     elif app_model == 'curatorship.Connection':
         if request.user.type == 'Teacher':

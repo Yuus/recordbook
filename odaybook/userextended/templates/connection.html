@@ -1,7 +1,11 @@
 {% extends 'page.html' %}
 
 {% block padding %}
-    <a href="/administrator/uni/userextended.School/#sch{{ grade__school.id }}">{{ grade__school }}</a>
+    {% if user.edu_admin %}
+        <a href="/administrator/uni/userextended.School/#sch{{ grade__school.id }}">{{ grade__school }}</a>
+    {% else %}
+        {{ grade__school }}
+    {% endif %}
     <span>&rarr;</span>
     <a href="/administrator/uni/curatorship.Connection/{{ grade__school.id }}/">Связки</a>
     <span>&rarr;</span>
