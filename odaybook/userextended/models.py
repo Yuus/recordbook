@@ -27,7 +27,11 @@ class PupilGroups:
         if item in self.groups:
             return self.groups[item]
         else:
-            return PupilConnection(value="0", pupil=self.pupil, subject=self.subjects.get(item, Subject.objects.get(id=item)))
+            try:
+                subject = Subject.objects.get(id=item)
+            except Subject.DoesNotExist:
+                subject = None
+            return PupilConnection(value="0", pupil=self.pupil, subject=self.subjects.get(item, subject))
 
     def __setitem__(self, key, value):
         self.groups[key] = value
