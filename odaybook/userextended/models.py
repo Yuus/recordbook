@@ -23,15 +23,15 @@ class PupilGroups:
         self.pupil = pupil
         self.subjects = {}
 
+    def __contains__(self, item):
+        return item in self.groups
+
     def __getitem__(self, item):
         if item in self.groups:
             return self.groups[item]
         else:
-            try:
-                subject = Subject.objects.get(id=item)
-            except Subject.DoesNotExist:
-                subject = None
-            return PupilConnection(value="0", pupil=self.pupil, subject=self.subjects.get(item, subject))
+            return PupilConnection(value="0", pupil=self.pupil,
+                                   subject=self.subjects.get(item, Subject.objects.get(id=item)))
 
     def __setitem__(self, key, value):
         self.groups[key] = value
