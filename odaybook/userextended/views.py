@@ -173,8 +173,6 @@ def objectEdit(request, app, model, mode, filter_id = None, id = 0):
     elif app_model == 'marks.ResultDate':
         if request.user.type == 'Teacher':
             ext['school'] = request.user.school
-        elif request.user.type == 'Superuser':
-            ext['school'] = None
     else:
         if request.user.type == 'Teacher':
             ext['school'] = request.user.school
