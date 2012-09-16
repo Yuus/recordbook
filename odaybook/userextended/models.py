@@ -17,6 +17,24 @@ from odaybook import settings
 
 logger = logging.getLogger(__name__)
 
+class PupilGroups:
+    def __init__(self, pupil):
+        self.groups = {}
+        self.pupil = pupil
+        self.subjects = {}
+
+    def __getitem__(self, item):
+        if item in self.groups:
+            return self.groups[item]
+        else:
+            return PupilConnection(value="0", pupil=self.pupil, subject=self.subjects.get(item, Subject.objects.get(id=item)))
+
+    def __setitem__(self, key, value):
+        self.groups[key] = value
+
+    def __len__(self):
+        return len(self.groups)
+
 class School(models.Model):
     '''Модель для школы'''
     name = models.CharField(u"Имя учебного заведения", max_length = 250)
@@ -895,7 +913,7 @@ class Pupil(BaseUser, Scholar):
             sum_n = 0
             for day in dates:
                 t = []
-                for mark in Mark.objects.filter(pupil = self, lesson__date = day, lesson__subject = subject):
+                for mark in Mark.objects.filter(pupil = self, lesson__date = day, lesson__attendance__subject = subject):
                     t.append(mark)
                     if mark.absent:
                         cols[0] = cols.get(0, 0) + 1
@@ -965,7 +983,7 @@ class Pupil(BaseUser, Scholar):
         '''
         if hasattr(self, 'groups') and len(self.groups):
             return
-        self.groups = {}
+        self.groups = PupilGroups(self)
         for subject in self.get_subjects():
             try:
                 connection = PupilConnection.objects.get(pupil = self, subject = subject)

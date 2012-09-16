@@ -122,8 +122,8 @@ def subjects(request):
         subject.avg = Mark.objects.filter(
                 pupil = pupil,
                 absent = False,
-                lesson__date__gte = datetime.now() - timedelta(weeks = 4),
-                lesson__subject = subject
+                lesson__date__gte = datetime.now() - timedelta(weeks=4),
+                lesson__attendance__subject = subject
         ).aggregate(Avg('mark'))['mark__avg']
         days = {1: u'Пн',
                 2: u'Вт',

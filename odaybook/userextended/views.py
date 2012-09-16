@@ -779,6 +779,8 @@ def import_pupil(request, filter_id):
                 messages.success(request, u'Ученики импортированы')
                 return HttpResponseRedirect('..')
     return render_to_response('~userextended/pupilImport.html', render, context_instance = RequestContext(request))
+
+
 @login_required
 @user_passes_test(lambda u: reduce(lambda x, y: x or y, map(lambda a: a in ['Superuser', 'EduAdmin'], u.types)))
 def import_subject(request, filter_id):
@@ -826,3 +828,30 @@ def import_subject(request, filter_id):
                 messages.success(request, u'Предметы импортированы')
                 return HttpResponseRedirect('..')
     return render_to_response('~userextended/subjectImport.html', render, context_instance = RequestContext(request))
+
+
+@login_required
+@user_passes_test(lambda u: reduce(lambda x, y: x or y, map(lambda a: a in ['Superuser', 'EduAdmin'], u.types)))
+def reset_grade(request, filter_id):
+    '''
+        Сброс данных класса.
+    '''
+
+    from odaybook.curatorship.models import Connection
+    from odaybook.attendance.models import UsalTimetable
+
+    grade = get_object_or_404(Grade, id=filter_id)
+    if request.user.type == 'EduAdmin':
+        if request.user.school.id != grade.school.id:
+            raise Http404
+
+    UsalTimetable.objects.filter(grade=grade).delete()
+    Connection.objects.filter(grade=grade).delete()
+
+    messages.success(request, u"Сброшено")
+
+    return HttpResponseRedirect('/administrator/uni/userextended.Grade/%d/' % grade.school.id)
+
+@login_required
+def profile(request):
+    return render_to_response("~userextended/profile.html", context_instance=RequestContext(request))

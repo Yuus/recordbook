@@ -18,7 +18,7 @@ lesson_id = 0;
 		modal: true,
 		buttons: {
 			"Закрыть": function() { 
-				$.get('?set_lesson=1&lesson=' + lesson_id, $('#lesson_form').serializeArray());
+				$.get('/marks/set_lesson/?lesson=' + lesson_id, $('#lesson_form').serializeArray());
                 if ($('#id_topic').val()!='') {
                     $('#lesson-' + lesson_id).removeClass('red');
                 }
@@ -29,7 +29,7 @@ lesson_id = 0;
 			}, 
 		},
 		open: function(event, ui) {
-			$.get('/marks/?get_lesson_info=1', {lesson: lesson_id}, function(data){
+			$.get('/marks//get_lesson_info/', {lesson: lesson_id}, function(data){
 				$('#id_topic').val(data.topic);
 				$('#id_task').val(data.task);
 				$('#lesson_form').css('display', 'block');
@@ -194,7 +194,7 @@ lesson_id = 0;
 			mark = $(this);
 			mark_id = $(this).attr('id');
 			if( mark.attr('mark') != mark.children('input').val() ){
-				$.get('?', {pupil: $(this).attr('pupil'), lesson: $(this).attr('lesson'), 'mark': mark.children('input').val(), 'set_mark': 1}, function(data){
+				$.get('/marks/set_mark/', {pupil: $(this).attr('pupil'), lesson: $(this).attr('lesson'), 'mark': mark.children('input').val()}, function(data){
 					if (data.mark!='no'){
 						$('#' + data.id).html(data.mark);
 						$('#' + data.id).attr('mark', 'true');

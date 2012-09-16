@@ -1,3 +1,4 @@
+{% load formater %}
 <html>
     <head>
         <title>Система электронных дневников</title>
@@ -159,6 +160,8 @@
                     {% if user.type == 'Teacher' %}{% include 'menu/teacher.html' %}{% endif %}
                     {% if user.type == 'Parent' %}{% include 'menu/parent.html' %}{% endif %}
                     {% if user.type == 'Superviser' %}{% include 'menu/superviser.html' %}{% endif %}
+                    {# Аккаунт? Настройки? #}
+                    {% main_menu_block 'Система' '/accounts/profile/' '' CM 'profile' %}
                 </div>
             </div>
             <!-- / Шапка --><!-- Тень -->

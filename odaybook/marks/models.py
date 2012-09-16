@@ -14,35 +14,18 @@ class Lesson(models.Model):
     '''
         Занятие. Содержит информацию об уроке. 
     '''
-    teacher = models.ForeignKey(Teacher,
-                                verbose_name = u'Учитель',
-                                blank = True,
-                                null = True)
+    teacher = models.ForeignKey(Teacher, verbose_name=u'Учитель', blank=True, null=True)
     date = models.DateField(u'Дата')
-    topic = models.CharField(u'Тема урока',
-                             max_length = 200,
-                             blank = True,
-                             null = True)
-    task = models.CharField(u'Домашнее задание',
-                            max_length = 200,
-                            blank = True,
-                            null = True)
-    subject = models.ForeignKey(Subject, verbose_name = u'Предмет')
-    grade = models.ManyToManyField(Grade, verbose_name = u'Класс')
-    group = models.CharField(max_length=2, null=True, blank=True, verbose_name=u'Группа')
-    file = models.FileField(verbose_name = u'Приложить файл',
-                            null = True,
-                            blank = True,
-                            upload_to = 'lessons')
-    resultdate = models.ForeignKey('ResultDate', null = True, blank = True)
-    fullness = models.BooleanField(default = False, verbose_name=u'Заполнено')
+    topic = models.CharField(u'Тема урока', max_length=200, blank=True, null=True)
+    task = models.CharField(u'Домашнее задание', max_length=200, blank=True, null=True)
+    file = models.FileField(verbose_name = u'Приложить файл', null=True, blank=True, upload_to='lessons')
+    resultdate = models.ForeignKey('ResultDate', null=True, blank=True)
+    fullness = models.BooleanField(default=False, verbose_name=u'Заполнено')
+    attendance = models.ForeignKey(UsalTimetable, null=True)
 
-    serialize_fields = ['id', 'teacher_id', 'date', 'topic',
-                        'task', 'subject_id', 'grade']
+    serialize_fields = ['id', 'teacher_id', 'date', 'topic', 'task', 'subject_id', 'grade']
     serialize_name = 'lesson'
 
-    attendance = models.ForeignKey(UsalTimetable, null=True)
-    
     class Meta:
         ordering = ['-date']
 

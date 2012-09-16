@@ -19,10 +19,10 @@ os.environ['DJANGO_SETTINGS_MODULE'] = 'odaybook.settings'
 
 logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s %(message)s',
-                    filename='/tmp/odaybook_crontabs.log');
+                    filename='/var/log/odaybook_crontabs.log')
 LOGGER = logging.getLogger()
 
-from odaybook.userextended.models import Teacher, Grade
+from odaybook.userextended.models import Teacher
 from odaybook.attendance.models import UsalTimetable
 from odaybook.marks.models import Lesson, ResultDate
 from odaybook.curatorship.models import Connection
@@ -31,7 +31,6 @@ LOGGER.warning('Lessons create started')
 
 for teacher in Teacher.objects.all():
     for conn in Connection.objects.filter(teacher=teacher):
-        if conn.grade.long_name == u'х-б': continue
         kwargs = {
             'subject': conn.subject,
             'grade': conn.grade,
@@ -43,6 +42,10 @@ for teacher in Teacher.objects.all():
         date_start = date.today()
 
         lesson_kwargs = kwargs.copy()
+        del lesson_kwargs["grade"]
+        del lesson_kwargs["subject"]
+        if "group" in lesson_kwargs:
+            del lesson_kwargs["group"]
         # FIXME: за последний и текущий дни.
         for i in xrange(14, -1, -1):
             d = date_start - timedelta(days=i)
@@ -50,14 +53,9 @@ for teacher in Teacher.objects.all():
             lesson_kwargs['teacher'] = teacher
             lesson_kwargs['date'] = d
             for timetable in UsalTimetable.objects.filter(**kwargs):
-                lesson_kwargs['group'] = timetable.group
                 lesson_kwargs['attendance'] = timetable
                 if not Lesson.objects.filter(**lesson_kwargs):
-                    lesson_kwargs4create = lesson_kwargs.copy()
-                    del lesson_kwargs4create['grade']
-                    lesson = Lesson(**lesson_kwargs4create)
-                    lesson.save()
-                    lesson.grade.add(lesson_kwargs['grade'])
+                    lesson = Lesson(**lesson_kwargs)
                     lesson.save()
             for resultdate in ResultDate.objects.filter(date = d, grades = kwargs['grade']):
                 kwargs4lesson = {

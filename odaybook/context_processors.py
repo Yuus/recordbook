@@ -27,6 +27,8 @@ def menu(request):
     if len(dirs)>3:
         if dirs[2] == 'uni':
             CM = dirs[3]
+    if request.path == "/accounts/profile/":
+        CM = "profile"
 
     SM = ''
     if len(dirs)>2:

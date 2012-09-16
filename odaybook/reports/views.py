@@ -411,17 +411,7 @@ def view_marks(request, id):
     pupil.get_groups()
     subject = get_object_or_404(Subject, id = id, school = pupil.school)
     subject.teacher = pupil.get_teacher(subject)
-    subject.avg = Mark.objects.filter(pupil = pupil,
-                                      absent = False,
-                                      lesson__date__gte = datetime.datetime.now() - datetime.timedelta(weeks = 4),
-                                      lesson__subject = subject
-                                      ).aggregate(Avg('mark'))['mark__avg']
-    if subject.avg < 3:
-        subject.avg_type = "bad"
-    elif subject.avg >= 4:
-        subject.avg_type = "good"
-    else:
-        subject.avg_type = "normal"
+
     days = {
         1: u'Пн',
         2: u'Вт',
@@ -452,13 +442,27 @@ def view_marks(request, id):
         if form.is_valid():
             start = form.cleaned_data['start']
             end = form.cleaned_data['end']
-    render['lessons'] = Lesson.objects.filter(grade = pupil.grade,
+    render['lessons'] = Lesson.objects.filter(attendance__grade = pupil.grade,
+                                              attendance__group = pupil.groups[subject.id].group,
                                               date__gte = start,
                                               date__lte = end,
-                                              subject = subject)
+                                              attendance__subject = subject)
+
     for lesson in render['lessons']:
         if Mark.objects.filter(pupil = pupil, lesson = lesson):
             lesson.mark = Mark.objects.get(pupil = pupil, lesson = lesson)
+
+    subject.avg = Mark.objects.filter(pupil=pupil,
+                                      absent=False,
+                                      lesson__in=render['lessons']
+                                     ).aggregate(Avg('mark'))['mark__avg']
+    if subject.avg < 3:
+        subject.avg_type = "bad"
+    elif subject.avg >= 4:
+        subject.avg_type = "good"
+    else:
+        subject.avg_type = "normal"
+
 
     render['subject'] = subject
     return render_to_response(

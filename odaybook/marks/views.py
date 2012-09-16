@@ -1,6 +1,7 @@
 # -*- coding: UTF-8 -*-
 from datetime import date, timedelta
 import logging
+import demjson
 from django.core.mail import mail_admins
 
 from django.template import RequestContext
@@ -25,8 +26,12 @@ LOGGER = logging.getLogger(__name__)
 @login_required
 def index(request):
     '''
-        Очень обширная страница, необходимо сделать разделение. 
+        Очень обширная страница для выставления и просмотра оценок
     '''
+
+    def _get_month_key(dt):
+        return int("%d%s" % (dt.year, str(dt.month).rjust(2, "0")))
+
     render = {}
     if request.user.type == 'Parent':
         start = date.today() - timedelta(weeks = 2)
@@ -45,16 +50,14 @@ def index(request):
         import demjson
 
         if request.GET.get('set_current_grade', False):
-            grade = get_object_or_404(Grade,
-                                      id = request.GET.get('set_current_grade', 0))
+            grade = get_object_or_404(Grade, id = request.GET.get('set_current_grade', 0))
             if grade not in request.user.grades.all():
                 raise Http404(u'Нет такого класса')
             request.user.current_grade = grade
             request.user.save()
 
         if request.GET.get('set_current_subject', False):
-            subject = get_object_or_404(Subject,
-                                        id = request.GET.get('set_current_subject', 0))
+            subject = get_object_or_404(Subject, id = request.GET.get('set_current_subject', 0))
             if subject not in request.user.subjects.all():
                 raise Http404(u'Нет такого предмета')
             request.user.current_subject = subject
@@ -72,55 +75,6 @@ def index(request):
 
 
         render['lesson_form'] = LessonForm()
-        if request.GET.get('set_lesson', False):
-            ids = request.GET.get('lesson', '').split(',')
-            del ids[len(ids)-1]
-            lessons = get_list_or_404(Lesson, id__in=ids, teacher=request.user, grade=request.user.current_grade)
-            for lesson in lessons:
-                form = LessonForm(request.GET, instance = lesson)
-                if form.is_valid():
-                    form.save()
-            return HttpResponse('ok')
-
-        if request.GET.get('get_lesson_info', False):
-            ids = request.GET.get('lesson', '').split(',')
-            del ids[len(ids)-1]
-            lesson = get_list_or_404(Lesson, id__in=ids, teacher=request.user, grade=request.user.current_grade)
-            return HttpResponse(demjson.encode({'task': lesson[0].task or '',
-                                                'topic': lesson[0].topic or ''}))
-
-        if request.GET.get('set_mark', False):
-            from templatetags.marks_chart import get_mark
-            pupil = get_object_or_404(Pupil,
-                                      id = int(request.GET.get('pupil', 0)),
-                                      grade = request.user.current_grade)
-            lesson = get_object_or_404(Lesson,
-                                       id = int(request.GET.get('lesson', 0)),
-                                       teacher = request.user)
-            mark = unicode(request.GET.get('mark', 0)).lower()
-            Mark.objects.filter(pupil = pupil, lesson = lesson).delete()
-            m = Mark(pupil = pupil, lesson = lesson)
-            tr_id = 'p-%d-%d' % (pupil.id, lesson.id)
-            if mark not in ['1', '2', '3', '4', '5', 'n', u'н', '', u'б', u'b']:
-                return HttpResponse(demjson.encode({'id': tr_id, 'mark': 'no'}))
-            if mark == '':
-                return HttpResponse(demjson.encode({'id': tr_id, 'mark': ''}))
-            if mark in [u'n', u'н', u'b', u'б']:
-                m.absent = True
-                if mark in [u'б', u'b']:
-                    m.sick = True
-            else:
-                m.mark = int(mark)
-            m.save()
-            pupil.get_groups()
-            a = pupil.groups
-            if lesson.subject_id in pupil.groups and lesson.group != pupil.groups[lesson.subject_id].value:
-                mail_admins("lesson cognetive dissonans", "Lesson id#%d, mark id#%d" % (lesson.id, m.id))
-            return HttpResponse(demjson.encode({'id': tr_id,
-                                                'mark': get_mark(pupil, [lesson,]),
-                                                'mark_value': str(m).strip(),
-                                                'mark_type': m.get_type()
-                                                }, encoding='utf8'))
 
         try:
             request.user.current_grade.get_pupils_for_teacher_and_subject(
@@ -134,12 +88,6 @@ def index(request):
                     context_instance = RequestContext(request))
 
         from pytils import dt
-#        try:
-#            day, month, year = request.GET.get('date', '').split('.')
-#            date_start = date(day = day, month = month, year = year)
-#        except ValueError:
-#            date_start = date.today()
-        #from datetime import timedelta
         date_start = date.today() - timedelta(days = 15)
         date_end = date.today() + timedelta(days = 1)
         render['stat_form'] = form = StatForm(request.GET)
@@ -148,9 +96,6 @@ def index(request):
             date_end = form.cleaned_data['end']
         else:
             render['stat_form'] = StatForm()
-
-        def _get_month_key(dt):
-            return int("%d%s" % (dt.year, str(dt.month).rjust(2, "0")))
 
         lessons_range = []
         render['monthes'] = monthes = {}
@@ -170,26 +115,22 @@ def index(request):
                     '~marks/%s/index.html' % request.user.type.lower(),
                     render,
                     context_instance = RequestContext(request))
-#        conn = conn[0]
 
         kwargs4lesson = {'teacher': request.user,
-                         'subject': request.user.current_subject,
+                         'attendance__subject': request.user.current_subject,
                          'date__gte': date_start,
-                         'grade': request.user.current_grade,
+                         'attendance__grade': request.user.current_grade,
                          'date__lte': date_end
         }
 
-        args = [Q(group=c.connection) for c in conn]
-
-#        if conn[0].connection != '0':
-#            kwargs4lesson['group'] = conn[0].connection
+        args = [Q(attendance__group=c.connection) for c in conn]
 
         last_col = []
         last_date = None
         for lesson in Lesson.objects.filter(reduce(lambda x, y: x | y, args), **kwargs4lesson).order_by('date'):
-            new_range = not lesson.subject.groups or \
+            new_range = not lesson.attendance.subject.groups or \
                         (len(last_col) == conn.count() and conn[0].connection != "0") or \
-                        lesson.group == '0' or last_date != lesson.date
+                        lesson.attendance.group == '0' or last_date != lesson.date
 
             if new_range:
                 monthes[_get_month_key(lesson.date)] = (dt.ru_strftime(u'%B', lesson.date),
@@ -224,6 +165,50 @@ def set_current_subject(request, subject_id):
     return HttpResponseRedirect(next_url)
 
 @login_required
+@user_passes_test(lambda u: u.type == 'Teacher')
+def set_mark(request):
+    from templatetags.marks_chart import get_mark
+    pupil = get_object_or_404(Pupil,
+        id = int(request.GET.get('pupil', 0)),
+        grade = request.user.current_grade)
+    lesson = get_object_or_404(Lesson,
+        id = int(request.GET.get('lesson', 0)),
+        teacher = request.user)
+    mark = unicode(request.GET.get('mark', 0)).lower()
+    Mark.objects.filter(pupil = pupil, lesson = lesson).delete()
+    m = Mark(pupil = pupil, lesson = lesson)
+    tr_id = 'p-%d-%d' % (pupil.id, lesson.id)
+    if mark not in ['1', '2', '3', '4', '5', 'n', u'н', '', u'б', u'b']:
+        return HttpResponse(demjson.encode({'id': tr_id, 'mark': 'no'}))
+    if mark == '':
+        return HttpResponse(demjson.encode({'id': tr_id, 'mark': ''}))
+    if mark in [u'n', u'н', u'b', u'б']:
+        m.absent = True
+        if mark in [u'б', u'b']:
+            m.sick = True
+    else:
+        m.mark = int(mark)
+    m.save()
+    pupil.get_groups()
+    if lesson.attendance.subject_id in pupil.groups and lesson.attendance.group != pupil.groups[lesson.attendance.subject_id].value:
+        mail_admins("lesson cognetive dissonans", "Lesson id#%d, mark id#%d" % (lesson.id, m.id))
+    return HttpResponse(demjson.encode({'id': tr_id,
+                                        'mark': get_mark(pupil, [lesson,]),
+                                        'mark_value': str(m).strip(),
+                                        'mark_type': m.get_type()
+    }, encoding='utf8'))
+
+@login_required
+@user_passes_test(lambda u: u.type == 'Teacher')
+def get_lesson_info(request):
+    ids = request.GET.get('lesson', '').split(',')
+    del ids[len(ids)-1]
+    lesson = get_list_or_404(Lesson, id__in=ids, teacher=request.user, attendance__grade=request.user.current_grade)
+    return HttpResponse(demjson.encode({'task': lesson[0].task or '',
+                                        'topic': lesson[0].topic or ''}))
+
+
+@login_required
 def marksView(request, subject_id):
     '''
         Просмотр оценок по данному предмету. Для родительского интерфейса
@@ -231,7 +216,7 @@ def marksView(request, subject_id):
     render = {}
     objects = Mark.objects.filter(
             pupil = request.user.current_pupil,
-            lesson__subject = get_object_or_404(Subject, id=subject_id)
+            lesson__atendance__subject = get_object_or_404(Subject, id=subject_id)
     ).order_by('-lesson__date')
 
     paginator = Paginator(objects, settings.PAGINATOR_OBJECTS)
@@ -251,6 +236,15 @@ def marksView(request, subject_id):
                               context_instance=RequestContext(request))
 
 
+def set_lesson(request):
+    ids = request.GET.get('lesson', '').split(',')
+    del ids[len(ids)-1]
+    lessons = get_list_or_404(Lesson, id__in=ids, teacher=request.user, attendance__grade=request.user.current_grade)
+    for lesson in lessons:
+        form = LessonForm(request.GET, instance = lesson)
+        if form.is_valid():
+            form.save()
+    return HttpResponse('ok')
 
 
 
