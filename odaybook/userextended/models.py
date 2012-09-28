@@ -300,6 +300,7 @@ class BaseClerk(models.Model):
     current_role = models.ForeignKey('BaseUser', null = True, blank = True,
                                      related_name = '%(app_label)s_%(class)s_related_role_related')
     sync_timestamp = models.IntegerField()
+    account = models.DecimalField(max_digits=10, decimal_places=2, default="0")
 
     _sync_timestamp_set = False
 

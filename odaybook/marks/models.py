@@ -6,6 +6,8 @@
 
 from django.db import models
 
+from odaybook.sms import send_message
+
 from odaybook.attendance.models import UsalTimetable
 
 from odaybook.userextended.models import Pupil, Teacher, Subject, Grade, School
@@ -76,15 +78,29 @@ class Mark(models.Model):
             return unicode(self.mark)
 
     def save(self, *args, **kwargs):
-        from odaybook.userextended.models import Notify
-        if not self.lesson.fullness:
-            #if self.lesson.topic and Mark.objects.filter(lesson = self.lesson) > 4:
-            if Mark.objects.filter(lesson = self.lesson) > 4:
-                self.lesson.fullness = True
-                self.lesson.save(safe = True)
+        if not self.pk:
+            from odaybook.userextended.models import Notify, Parent
+            if not self.lesson.fullness:
+                #if self.lesson.topic and Mark.objects.filter(lesson = self.lesson) > 4:
+                if Mark.objects.filter(lesson = self.lesson) > 4:
+                    self.lesson.fullness = True
+                    self.lesson.save(safe = True)
+            Notify.objects.filter(user = self.lesson.teacher, type = '1').delete()
+            sms_text = self.pupil.first_name
+            if self.absent:
+                sms_text += u" отсутствовал на уроке %s %d.%d" % \
+                            (self.lesson.attendance.subject.name, self.lesson.date.day, self.lesson.date.month)
+                if self.sick:
+                    sms_text += u" из-за болезни"
+            else:
+                sms_text += u" получил %d на уроке %s %d.%d" %\
+                            (self.mark, self.lesson.attendance.subject.name, self.lesson.date.day, self.lesson.date.month)
+            for parent in Parent.objects.filter(pupils=self.pupil):
+                if parent.clerk.phone:
+                    # TODO: уменьшение баланса
+                    send_message(parent.clerk.phone, sms_text)
         super(Mark, self).save(*args, **kwargs)
-        Notify.objects.filter(user = self.lesson.teacher, type = '1').delete()
-    
+
     class Meta:
         ordering = ['-date']
 

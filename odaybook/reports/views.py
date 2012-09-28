@@ -222,7 +222,7 @@ def report_fillability(request):
     for school in schools:
         rows.insert_row()
         fillability = get_fillability(
-                Lesson.objects.filter(grade__school=school)
+                Lesson.objects.filter(attendance__grade__school=school)
         )
         for i in fillability:
             if 'percent' not in i and i != 'all':

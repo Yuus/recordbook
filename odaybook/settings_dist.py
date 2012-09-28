@@ -175,10 +175,15 @@ INSTALLED_APPS = (
     'odaybook.marks',
     'odaybook.curatorship',
     'odaybook.tests',
+    'odaybook.notify',
     'odaybook.billing',
     'odaybook.reports',
 )
 
+SMS_BACKEND = "odaybook.sms.backends.avisosms.AvisoSMS"
+SMS_USERNAME = "raspisanie.ru"
+SMS_PASSWORD = "HQYPswzq2k9UrSYMWVMp"
+SMS_SOURCE_ADDRESS = "Raspisanie"
 
 # A sample logging configuration. The only tangible logging
 # performed by this configuration is to send an email to

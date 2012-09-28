@@ -16,7 +16,7 @@ os.environ['DJANGO_SETTINGS_MODULE'] = 'odaybook.settings'
 
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s %(message)s',
-                    filename='/tmp/odaybook.log');
+                    filename='/tmp/odaybook.log')
 
 _application = django.core.handlers.wsgi.WSGIHandler()
 

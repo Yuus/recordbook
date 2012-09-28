@@ -88,6 +88,8 @@ class MenuBlockNode(template.Node):
             context['current_color'] = self.current_color
 
         if self.color == '':
+            if context['current_color'] > len(self.colors) - 1:
+                context["current_color"] = 0
             self.color = self.colors[context['current_color']]
             context['current_color'] += 1
         else:
