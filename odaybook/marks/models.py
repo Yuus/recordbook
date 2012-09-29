@@ -101,8 +101,8 @@ class Mark(models.Model):
                 sms_text += u"%d" % self.mark
             for parent in Parent.objects.filter(pupils=self.pupil):
                 if parent.clerk.phone:
-                    if parent.clerk.account > Decimal("-0.30"):
-                        Transaction(user=parent.clerk, amount="-0.30", comment=u"SMS").make_complited()
+                    if parent.clerk.account >= Decimal("1"):
+                        Transaction(user=parent.clerk, amount="-1", comment=u"SMS").make_complited()
                         send_message(parent.clerk.phone, sms_text)
 
         super(Mark, self).save(*args, **kwargs)
