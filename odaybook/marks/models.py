@@ -90,10 +90,11 @@ class Mark(models.Model):
                     self.lesson.save(safe = True)
             Notify.objects.filter(user = self.lesson.teacher, type = '1').delete()
 
-            sms_text = "%s, %s(%d.%d): " % (self.pupil.first_name,
+            sms_text = "%s, %s(%s.%s): " % (self.pupil.first_name,
                                             self.lesson.attendance.subject.name,
-                                            self.lesson.date.day,
-                                            self.lesson.date.month)
+                                            str(self.lesson.date.day).rjust(2, "0"),
+                                            str(self.lesson.date.month).rjust(2, "0"),
+                                            )
             if self.absent:
                 sms_text += u"не был"
             else:
