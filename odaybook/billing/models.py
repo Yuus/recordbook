@@ -21,7 +21,7 @@ class Transaction(models.Model):
         if not self.paid:
             self.paid = True
             self.paid_timestamp = datetime.datetime.now()
-            self.user.account += self.amount
+            self.user.account += decimal.Decimal(self.amount)
             self.user.save()
-            self.paid.save()
+            self.save()
 

@@ -538,7 +538,7 @@ class Clerk(User, BaseClerk):
         Служит "концентрационной" моделью.
     '''
 
-    objects = ClerkManager(['last_name', 'first_name', 'middle_name', 'username'])
+    objects = ClerkManager(['last_name', 'first_name', 'middle_name', 'username', "phone"])
 
     def save(self, set_password = None, init = False, safe = False, *args, **kwargs):
         '''

@@ -2,7 +2,7 @@
 '''
     Работа с оценками.
 '''
-
+from decimal import Decimal
 
 from django.db import models
 
@@ -11,6 +11,9 @@ from odaybook.sms import send_message
 from odaybook.attendance.models import UsalTimetable
 
 from odaybook.userextended.models import Pupil, Teacher, Subject, Grade, School
+
+from odaybook.billing.models import Transaction
+
 
 class Lesson(models.Model):
     '''
@@ -86,19 +89,21 @@ class Mark(models.Model):
                     self.lesson.fullness = True
                     self.lesson.save(safe = True)
             Notify.objects.filter(user = self.lesson.teacher, type = '1').delete()
-            sms_text = self.pupil.first_name
+
+            sms_text = "%s, %s(%d.%d): " % (self.pupil.first_name,
+                                            self.lesson.attendance.subject.name,
+                                            self.lesson.date.day,
+                                            self.lesson.date.month)
             if self.absent:
-                sms_text += u" отсутствовал на уроке %s %d.%d" % \
-                            (self.lesson.attendance.subject.name, self.lesson.date.day, self.lesson.date.month)
-                if self.sick:
-                    sms_text += u" из-за болезни"
+                sms_text += u"не был"
             else:
-                sms_text += u" получил %d на уроке %s %d.%d" %\
-                            (self.mark, self.lesson.attendance.subject.name, self.lesson.date.day, self.lesson.date.month)
+                sms_text += u"%d" % self.mark
             for parent in Parent.objects.filter(pupils=self.pupil):
                 if parent.clerk.phone:
-                    # TODO: уменьшение баланса
-                    send_message(parent.clerk.phone, sms_text)
+                    if parent.clerk.account > Decimal("-0.30"):
+                        Transaction(user=parent.clerk, amount="-0.30", comment=u"SMS").make_complited()
+                        send_message(parent.clerk.phone, sms_text)
+
         super(Mark, self).save(*args, **kwargs)
 
     class Meta:
