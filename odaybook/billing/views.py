@@ -22,9 +22,9 @@ def pay(request):
             obj = form.save(commit=False)
             obj.comment = u"Пополнение SMS-баланса"
             obj.save()
-            sign = hashlib.md5("entropius:%s:%d:Pxh3dzVg5bayPQvXwz2v" % (str(obj.amount), obj.id)).hexdigest()
+            sign = hashlib.md5(":%s:%d:Pxh3dzVg5bayPQvXwz2v" % (str(obj.amount), obj.id)).hexdigest()
             return HttpResponseRedirect(
-                "http://test.robokassa.ru/Index.aspx?MrchLogin=entropius&OutSum=%s&InvId=%d&Desc=%s&SignatureValue=%s&IncCurrLabel=QiwiR&Culture=ru"
+                "http://merchant.roboxchange.com/Index.aspx?MrchLogin=SkyZmey&OutSum=%s&InvId=%d&Desc=%s&SignatureValue=%s&IncCurrLabel=QiwiR&Culture=ru"
                 % (str(obj.amount), obj.id, obj.comment, sign)
             )
     else:
