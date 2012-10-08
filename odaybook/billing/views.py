@@ -1,6 +1,9 @@
 # -*- encoding: utf-8 -*-
 from decimal import Decimal
 import hashlib
+from django.conf import settings
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.core.paginator import Paginator
 
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.shortcuts import render_to_response, get_object_or_404
@@ -13,6 +16,8 @@ from forms import TransactionForm
 def index(request):
     return HttpResponse(u"Страница  разработке")
 
+@login_required
+@user_passes_test(lambda u: u.type == 'Parent')
 def pay(request):
     render = {}
 
@@ -59,3 +64,22 @@ def fail(request):
     messages.error(request, u"Оплата не прошла. Попробуйте повторить операцию позже.")
     return HttpResponseRedirect("/notify/")
 
+@login_required
+@user_passes_test(lambda u: u.type == 'Parent')
+def history(request):
+    render = {}
+
+    render["objects"] = objects = Transaction.objects.filter(user=request.user.clerk, paid=True)
+
+    paginator = Paginator(objects, settings.PAGINATOR_OBJECTS)
+    try:
+        page = int(request.GET.get('page', '1'))
+    except ValueError:
+        page = 1
+    try:
+        render['objects'] = paginator.page(page)
+    except:
+        render['objects'] = paginator.page(paginator.num_pages)
+    render['paginator'] = paginator.num_pages - 1
+
+    return render_to_response("~billing/history.html", render, context_instance=RequestContext(request))

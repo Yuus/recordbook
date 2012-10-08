@@ -5,6 +5,8 @@
     {#    {% if SM == "connections" %}<h1>Связки</h1> {% else %}<a href="/curatorship/connections/">Связки</a>{% endif %}#}
 
     {# FIXME: formatter #}
-    <h1>Ваш баланс: {{ user.clerk.account|default:"0,00"|number_format }} р.</h1><a href="/billing/pay/">пополнить</a>
+    <h1>Ваш баланс: {{ user.clerk.account|default:"0,00"|number_format }} р.</h1><a href="/billing/pay/">(пополнить)</a>
+
+    {% if SM == "billing" %}<h1>История пополнений</h1> {% else %}<a href="/billing/history/">История пополнений</a>{% endif %}
 
 {% endblock %}

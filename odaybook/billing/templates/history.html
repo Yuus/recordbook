@@ -1,0 +1,25 @@
+{% extends 'billing_page.html' %}
+
+{% block content %}
+    {% if objects.object_list %}
+        <table class="table">
+            <thead>
+                <th>Дата</th>
+                <th>Сумма</th>
+                <th>Описание</th>
+            </thead>
+            {% for obj in objects.object_list %}
+                <tr class="{% cycle 'gray' '' %}">
+                    <td>{{ obj.timestamp }}</td>
+                    <td>{{ obj.amount }}</td>
+                    <td>{{ obj.comment }}</td>
+                </tr>
+            {% endfor %}
+        </table>
+        {% include "helpers/paginator.html" %}
+    {% endif %}
+
+{% endblock %}
+
+
+
