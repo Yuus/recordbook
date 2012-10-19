@@ -27,7 +27,7 @@ def pay(request):
             obj = form.save(commit=False)
             obj.comment = u"Пополнение SMS-баланса"
             obj.save()
-            sign = hashlib.md5(":%s:%d:Pxh3dzVg5bayPQvXwz2v" % (str(obj.amount), obj.id)).hexdigest()
+            sign = hashlib.md5("SkyZmey:%s:%d:Pxh3dzVg5bayPQvXwz2v" % (str(obj.amount), obj.id)).hexdigest()
             return HttpResponseRedirect(
                 "http://merchant.roboxchange.com/Index.aspx?MrchLogin=SkyZmey&OutSum=%s&InvId=%d&Desc=%s&SignatureValue=%s&IncCurrLabel=QiwiR&Culture=ru"
                 % (str(obj.amount), obj.id, obj.comment, sign)
@@ -49,7 +49,7 @@ def result(request):
     if transaction.amount != Decimal(amount):
         raise Http404()
 
-    if sign.lower() != hashlib.md5("%s:%s:2YwKcqQgRCxLALPJBE35" % (amount, id)).hexdigest().lower():
+    if sign.lower() != hashlib.md5("SkyZmey:%s:%s:2YwKcqQgRCxLALPJBE35" % (amount, id)).hexdigest().lower():
         raise Http404()
 
     transaction.make_complited()
