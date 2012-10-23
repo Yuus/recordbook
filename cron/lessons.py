@@ -22,6 +22,8 @@ logging.basicConfig(level=logging.DEBUG,
                     filename='/var/log/odaybook_crontabs.log')
 LOGGER = logging.getLogger()
 
+from django.db.models import Q
+
 from odaybook.userextended.models import Teacher
 from odaybook.attendance.models import UsalTimetable
 from odaybook.marks.models import Lesson, ResultDate
@@ -31,13 +33,14 @@ LOGGER.warning('Lessons create started')
 
 for teacher in Teacher.objects.all():
     for conn in Connection.objects.filter(teacher=teacher):
+        args = []
         kwargs = {
             'subject': conn.subject,
             'grade': conn.grade,
         }
 
         if conn.connection != '0':
-            kwargs['group'] = conn.connection
+            args.append(Q(group=conn.connection) | Q(group="0"))
 
         date_start = date.today()
 
@@ -52,7 +55,7 @@ for teacher in Teacher.objects.all():
             kwargs['workday'] = str(d.weekday()+1)
             lesson_kwargs['teacher'] = teacher
             lesson_kwargs['date'] = d
-            for timetable in UsalTimetable.objects.filter(**kwargs):
+            for timetable in UsalTimetable.objects.filter(*args, **kwargs):
                 lesson_kwargs['attendance'] = timetable
                 if not Lesson.objects.filter(**lesson_kwargs):
                     lesson = Lesson(**lesson_kwargs)
