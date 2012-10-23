@@ -124,6 +124,7 @@ def index(request):
         }
 
         args = [Q(attendance__group=c.connection) for c in conn]
+        args.append(Q(attendance__group="0"))
 
         last_col = []
         last_date = None
