@@ -442,11 +442,12 @@ def view_marks(request, id):
         if form.is_valid():
             start = form.cleaned_data['start']
             end = form.cleaned_data['end']
-    render['lessons'] = Lesson.objects.filter(attendance__grade = pupil.grade,
-                                              attendance__group = pupil.groups[subject.id].group,
-                                              date__gte = start,
-                                              date__lte = end,
-                                              attendance__subject = subject)
+    if lessons:
+        render['lessons'] = Lesson.objects.filter(attendance__grade = pupil.grade,
+                                                  attendance__group = pupil.groups[subject.id].group,
+                                                  date__gte = start,
+                                                  date__lte = end,
+                                                  attendance__subject = subject)
 
     for lesson in render['lessons']:
         if Mark.objects.filter(pupil = pupil, lesson = lesson):
