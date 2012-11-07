@@ -64,7 +64,7 @@ for teacher in Teacher.objects.all():
                 kwargs4lesson = {
                     'resultdate': resultdate,
                     'attendance__grade': kwargs['grade'],
-                    'subject': kwargs['subject'],
+                    'attendance__subject': kwargs['subject'],
                     'teacher': teacher,
                     "attendance__group": conn.connection,
                 }
@@ -73,6 +73,4 @@ for teacher in Teacher.objects.all():
                     lesson = Lesson(topic = resultdate.name,
                                     date = resultdate.date,
                                     **kwargs4lesson)
-                    lesson.save()
-                    lesson.grade.add(kwargs['grade'])
                     lesson.save()
