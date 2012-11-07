@@ -63,7 +63,7 @@ for teacher in Teacher.objects.all():
             for resultdate in ResultDate.objects.filter(date = d, grades = kwargs['grade']):
                 kwargs4lesson = {
                     'resultdate': resultdate,
-                    'grade': kwargs['grade'],
+                    'attendance__grade': kwargs['grade'],
                     'subject': kwargs['subject'],
                     'teacher': teacher,
                     "group": conn.connection,
