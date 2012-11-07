@@ -66,7 +66,7 @@ for teacher in Teacher.objects.all():
                     'attendance__grade': kwargs['grade'],
                     'subject': kwargs['subject'],
                     'teacher': teacher,
-                    "group": conn.connection,
+                    "attendance__group": conn.connection,
                 }
                 if not Lesson.objects.filter(**kwargs4lesson):
                     del kwargs4lesson['grade']
