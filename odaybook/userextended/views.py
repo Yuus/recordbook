@@ -66,10 +66,13 @@ def objectList(request, app, model, filter_id = None):
             else:
                 ext['school'] = None
     elif app_model == 'marks.ResultDate':
-        if request.user.type == 'Superuser' and not filter_id:
-            ext['school'] = None
-        else:
-            ext['school'] = get_object_or_404(School, id = filter_id)
+        if request.user.type == 'Teacher':
+            ext['school'] = request.user.school
+        elif request.user.type == "Superuser":
+            if filter_id:
+                ext['school'] = get_object_or_404(School, id = filter_id)
+            else:
+                ext["school"] = None
     else:
         if request.user.type == 'Teacher':
             ext['school'] = request.user.school
@@ -152,6 +155,7 @@ def objectEdit(request, app, model, mode, filter_id = None, id = 0):
         if request.user.type == 'Teacher':
            if int(id) != request.user.school.id:
                raise Http404(u'Не та школа')
+        # WTF??
         else:
             if app_model == 'marks.ResultDate':
                 ext['school'] = None
@@ -173,6 +177,11 @@ def objectEdit(request, app, model, mode, filter_id = None, id = 0):
     elif app_model == 'marks.ResultDate':
         if request.user.type == 'Teacher':
             ext['school'] = request.user.school
+        elif request.user.type == "Superuser":
+            if filter_id:
+                ext['school'] = get_object_or_404(School, id = filter_id)
+            else:
+                ext["school"] = None
     else:
         if request.user.type == 'Teacher':
             ext['school'] = request.user.school

@@ -117,19 +117,28 @@ def index(request):
                     context_instance = RequestContext(request))
 
         kwargs4lesson = {'teacher': request.user,
-                         'attendance__subject': request.user.current_subject,
+#                         'attendance__subject': request.user.current_subject,
                          'date__gte': date_start,
-                         'attendance__grade': request.user.current_grade,
+#                         'attendance__grade': request.user.current_grade,
                          'date__lte': date_end
         }
 
         args = [Q(attendance__group=c.connection) for c in conn]
         args.append(Q(attendance__group="0"))
+        args.append(Q(attendance=None))
+
+        filter_arg = \
+            Q(attendance__subject=request.user.current_subject, attendance__grade=request.user.current_grade) \
+            | Q(resultdate__grades=request.user.current_grade)
+
+#        filter_args.append(Q(attendance__subject=request.user.current_subject, attendance__grade=request.user.current_grade))
+#        filter_args.append(Q(resultdate__subject=request.user.current_subject, resultdate__grade=request.user.current_grade))
 
         last_col = []
         last_date = None
-        for lesson in Lesson.objects.filter(reduce(lambda x, y: x | y, args), **kwargs4lesson).order_by('date'):
-            new_range = not lesson.attendance.subject.groups or \
+        for lesson in Lesson.objects.filter(reduce(lambda x, y: x | y, args), filter_arg, **kwargs4lesson).order_by('date'):
+
+            new_range = lesson.attendance==None or not lesson.attendance.subject.groups or \
                         (len(last_col) == conn.count() and conn[0].connection != "0") or \
                         lesson.attendance.group == '0' or last_date != lesson.date
 
@@ -191,7 +200,7 @@ def set_mark(request):
         m.mark = int(mark)
     m.save()
     pupil.get_groups()
-    if lesson.attendance.subject_id in pupil.groups and lesson.attendance.group != pupil.groups[lesson.attendance.subject_id].value:
+    if lesson.attendance and lesson.attendance.subject_id in pupil.groups and lesson.attendance.group != pupil.groups[lesson.attendance.subject_id].value:
         mail_admins("lesson cognetive dissonans", "Lesson id#%d, mark id#%d" % (lesson.id, m.id))
     return HttpResponse(demjson.encode({'id': tr_id,
                                         'mark': get_mark(pupil, [lesson,]),

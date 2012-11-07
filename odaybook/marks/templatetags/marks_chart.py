@@ -15,9 +15,12 @@ def _get_lesson(lesson_col, pupil):
     LOGGER.info('_get_lesson start')
     pupil.get_groups()
     for lesson in lesson_col:
-        if lesson.attendance.group == None or lesson.attendance.group == '0' or \
-           (lesson.attendance.subject_id in pupil.groups and lesson.attendance.group == pupil.groups[lesson.attendance.subject.id].value):
-            LOGGER.info('_get_lesson end')
+        if lesson.attendance:
+            if lesson.attendance.group == None or lesson.attendance.group == '0' or \
+               (lesson.attendance.subject_id in pupil.groups and lesson.attendance.group == pupil.groups[lesson.attendance.subject.id].value):
+                LOGGER.info('_get_lesson end')
+                return lesson.id
+        else:
             return lesson.id
     LOGGER.info('_get_lesson end')
     return None
