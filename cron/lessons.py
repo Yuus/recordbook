@@ -69,7 +69,6 @@ for teacher in Teacher.objects.all():
                     "attendance__group": conn.connection,
                 }
                 if not Lesson.objects.filter(**kwargs4lesson):
-                    del kwargs4lesson['grade']
                     lesson = Lesson(topic = resultdate.name,
                                     date = resultdate.date,
                                     **kwargs4lesson)
