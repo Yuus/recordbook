@@ -23,6 +23,9 @@ class Lesson(models.Model):
     fullness = models.BooleanField(default=False, verbose_name=u'Заполнено')
     attendance = models.ForeignKey(UsalTimetable, null=True)
 
+    grade = models.ForeignKey(Grade, null=True)
+    subject = models.ForeignKey(Subject, verbose_name = u"Предмет", blank=True)
+
     serialize_fields = ['id', 'teacher_id', 'date', 'topic', 'task', 'subject_id', 'grade']
     serialize_name = 'lesson'
 

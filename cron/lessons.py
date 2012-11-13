@@ -62,11 +62,11 @@ for teacher in Teacher.objects.all():
                 if not Lesson.objects.filter(**lesson_kwargs):
                     lesson = Lesson(**lesson_kwargs)
                     lesson.save()
-            for resultdate in ResultDate.objects.filter(date = d, grades = kwargs['grade']):
+            for resultdate in ResultDate.objects.filter(date=d, grades=kwargs['grade'], school=conn.grade.school):
                 kwargs4lesson = {
                     'resultdate': resultdate,
-#                    'attendance__grade': kwargs['grade'],
-#                    'attendance__subject': kwargs['subject'],
+                    'grade': kwargs['grade'],
+                    'subject': kwargs['subject'],
                     'teacher': teacher,
 #                    "attendance__group": conn.connection,
                 }

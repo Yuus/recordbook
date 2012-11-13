@@ -129,7 +129,7 @@ def index(request):
 
         filter_arg = \
             Q(attendance__subject=request.user.current_subject, attendance__grade=request.user.current_grade) \
-            | Q(resultdate__grades=request.user.current_grade)
+            | Q(resultdate__grades=request.user.current_grade, grade=request.user.current_grade, subject=request.user.current_subject)
 
 #        filter_args.append(Q(attendance__subject=request.user.current_subject, attendance__grade=request.user.current_grade))
 #        filter_args.append(Q(resultdate__subject=request.user.current_subject, resultdate__grade=request.user.current_grade))
