@@ -25,7 +25,7 @@ LOGGER = logging.getLogger()
 from django.db.models import Q
 
 from odaybook.userextended.models import Teacher
-from odaybook.attendance.models import UsalTimetable
+from odaybook.attendance.models import UsalTimetable, Vocation
 from odaybook.marks.models import Lesson, ResultDate
 from odaybook.curatorship.models import Connection
 
@@ -55,6 +55,8 @@ for teacher in Teacher.objects.all():
             kwargs['workday'] = str(d.weekday()+1)
             lesson_kwargs['teacher'] = teacher
             lesson_kwargs['date'] = d
+            if Vocation.objects.filter(start__lte=d, end__gte=d, grades=conn.grade):
+                continue
             for timetable in UsalTimetable.objects.filter(*args, **kwargs):
                 lesson_kwargs['attendance'] = timetable
                 if not Lesson.objects.filter(**lesson_kwargs):

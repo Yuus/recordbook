@@ -1,0 +1,24 @@
+{% extends 'page.html' %}
+
+{% block  js_ready %}
+    $("#id_start").datepicker($.datepicker.regional["ru"]);
+    $("#id_end").datepicker($.datepicker.regional["ru"]);
+{% endblock %}
+
+{% block padding %}
+    {% if school %}
+        <a href="/administrator/uni/userextended.School/#sch{{ school.id }}">{{ school }}</a>
+        <span>&rarr;</span>
+    {% else %}
+        <a href="/administrator/uni/userextended.School/">Школы</a>
+        <span>&rarr;</span>
+    {% endif %}
+    <a href="/administrator/uni/attendance.Vocation//{{ school.id }}/">Каникулы</a>
+    <span>&rarr;</span>
+    <h1>Редактирование</h1>
+{% endblock %}
+
+
+{% block content %}
+	{% include 'helpers/uniForm.html' %}
+{% endblock %}

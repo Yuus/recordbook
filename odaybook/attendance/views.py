@@ -1,17 +1,19 @@
 # -*- coding: UTF-8 -*-
+from django.core.paginator import Paginator
 
 from django.template import RequestContext
 from django.shortcuts import render_to_response, get_object_or_404
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
+from django.views.generic import ListView
 
 from odaybook import settings
 from odaybook.userextended.models import Grade, Subject, School
 from odaybook.userextended.forms import ImportForm
 from odaybook.userextended.views import get_grade
 
-from models import UsalTimetable
+from models import UsalTimetable, Vocation, Holiday
 from utils import TimetableDayPupil, TimetableDayGrade
 
 @login_required
@@ -222,3 +224,57 @@ def import_timetable(request, school):
                 messages.success(request, u'Расписание импортировано')
                 return HttpResponseRedirect('..')
     return render_to_response('~attendance/timetableImport.html', render, context_instance = RequestContext(request))
+
+@login_required
+@user_passes_test(lambda u: reduce(lambda x, y: x or y, map(lambda a: a in ['Superuser', 'EduAdmin'], u.types)))
+def vocations(request, school):
+    render = {}
+    if school:
+        school = get_object_or_404(School, id = school)
+    else:
+        school = request.user.school
+
+    objects = Vocation.objects.all()
+    objects = objects.filter(grades__school=school)
+    if request.GET.get("order_by", False):
+        objects = objects.order_by(request.GET.get("order_by"))
+        render["order_by"] = request.GET.get("order_by")
+    paginator = Paginator(objects, settings.PAGINATOR_OBJECTS)
+    try:
+        page = int(request.GET.get('page', '1'))
+    except ValueError:
+        page = 1
+    try:
+        render['objects'] = paginator.page(page)
+    except:
+        render['objects'] = paginator.page(paginator.num_pages)
+    render['paginator'] = paginator.num_pages - 1
+
+    return render_to_response('~attendance/vocations.html', render, context_instance = RequestContext(request))
+
+@login_required
+@user_passes_test(lambda u: reduce(lambda x, y: x or y, map(lambda a: a in ['Superuser', 'EduAdmin'], u.types)))
+def vocation(request, school, mode):
+    render = {}
+    if school:
+        school = get_object_or_404(School, id = school)
+    else:
+        school = request.user.school
+
+    objects = Vocation.objects.all()
+    objects = objects.filter(grades__school=school)
+    if request.GET.get("order_by", False):
+        objects = objects.order_by(request.GET.get("order_by"))
+        render["order_by"] = request.GET.get("order_by")
+    paginator = Paginator(objects, settings.PAGINATOR_OBJECTS)
+    try:
+        page = int(request.GET.get('page', '1'))
+    except ValueError:
+        page = 1
+    try:
+        render['objects'] = paginator.page(page)
+    except:
+        render['objects'] = paginator.page(paginator.num_pages)
+    render['paginator'] = paginator.num_pages - 1
+
+    return render_to_response('~attendance/vocations.html', render, context_instance = RequestContext(request))

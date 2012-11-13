@@ -76,6 +76,8 @@ class School(models.Model):
         show = {}
         show['teachers'] = show['staff'] = show['subjects'] = show['grades'] = show['options'] = True
         show['pupils'] = grades
+        show['holydays'] = grades
+        show['vocations'] = grades
         show['resultdates'] = grades
         show['connections'] = teachers
         show['deliveryes'] = marks

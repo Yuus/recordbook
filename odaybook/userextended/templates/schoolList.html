@@ -108,13 +108,27 @@
 					Расписания
 				{% endif %}
 			</td>
-			<td colspan="2">
-				{% if school.show.resultdates %}
-					<a href="/administrator/uni/marks.ResultDate/{{ school.id }}/">Итоговые периоды</a>
-				{% else %}
-					Итоговые периоды
-				{% endif %}
-			</td>
+            <td>
+                {% if school.show.resultdates %}
+                    <a href="/administrator/uni/marks.ResultDate/{{ school.id }}/">Итоговые периоды</a>
+                {% else %}
+                    Итоговые периоды
+                {% endif %}
+            </td>
+{#            <td>#}
+{#                {% if school.show.holydays %}#}
+{#                    <a href="/administrator/uni/attendance.Holiday/{{ school.id }}/">Праздники</a>#}
+{#                {% else %}#}
+{#                    Праздники#}
+{#                {% endif %}#}
+{#            </td>#}
+            <td>
+                {% if school.show.vocations %}
+                    <a href="/administrator/uni/attendance.Vocation/{{ school.id }}/">Каникулы</a>
+                {% else %}
+                    Каникулы
+                {% endif %}
+            </td>
 		</tr>
 		<tr>
 			<td colspan="9"><hr /></td>

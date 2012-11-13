@@ -61,11 +61,21 @@ class SpecicalTimetable(Timetable):
     '''
     date = models.DateField(u"Дата")
 
-class Holiday(models.Model):
+class DayOff(models.Model):
     u'''
         Заготовка каникулярных периодов. Нигде не используется
     '''
-    name = models.CharField(u"Имя", max_length = 255)
+    name = models.CharField(u"Название", max_length = 255)
     start = models.DateField(u"Дата начала")
     end = models.DateField(u"Дата окончания")
-    school = models.ForeignKey(School)
+
+    class Meta:
+        abstract = True
+
+class Holiday(DayOff):
+    pass
+
+class Vocation(DayOff):
+    from odaybook.userextended.models import Grade, School
+    school = models.ForeignKey(School, verbose_name=u"Школа")
+    grades = models.ManyToManyField(Grade, verbose_name=u"Классы")

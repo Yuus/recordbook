@@ -24,6 +24,7 @@ from forms import ClerkForm, PupilConnectionForm, ClerkRegisterForm, ImportForm
 import odaybook.userextended.forms
 import odaybook.curatorship.forms
 import odaybook.marks.forms
+import odaybook.attendance.forms
 from odaybook.utils import PlaningError
 
 def index(request):
@@ -65,7 +66,7 @@ def objectList(request, app, model, filter_id = None):
                 ext['school'] = get_object_or_404(School, id = filter_id)
             else:
                 ext['school'] = None
-    elif app_model == 'marks.ResultDate':
+    elif app_model in ['marks.ResultDate', "attendance.Vocation"]:
         if request.user.type == 'Teacher':
             ext['school'] = request.user.school
         elif request.user.type == "Superuser":
@@ -89,7 +90,7 @@ def objectList(request, app, model, filter_id = None):
             'userextended.Grade', 'userextended.Subject', 'userextended.Pupil',
             'userextended.Teacher', 'userextended.Staff', 'userextended.School',
             'userextended.Option', 'userextended.Achievement', 'marks.ResultDate',
-            'curatorship.Connection',
+            'curatorship.Connection', "attendance.Vocation",
     ]
     if request.user.type == 'Superuser':
         allowed_apps += 'userextended.Clerk',
@@ -143,7 +144,7 @@ def objectEdit(request, app, model, mode, filter_id = None, id = 0):
             'userextended.Grade', 'userextended.Subject', 'userextended.Pupil',
             'userextended.Teacher', 'userextended.Staff', 'userextended.School',
             'userextended.Option', 'userextended.Achievement', 'marks.ResultDate',
-            'curatorship.Connection', 
+            'curatorship.Connection', "attendance.Vocation",
     ]
     if app + '.' + model not in allowed_apps:
         raise Http404('Object not allowed')
