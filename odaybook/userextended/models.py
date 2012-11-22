@@ -919,7 +919,7 @@ class Pupil(BaseUser, Scholar):
             sum_n = 0
             for day in dates:
                 t = []
-                for mark in Mark.objects.filter(pupil = self, lesson__date = day, lesson__attendance__subject = subject):
+                for mark in Mark.objects.filter(Q(lesson__subject=subject) | Q(lesson__attendance__subject=subject), pupil=self, lesson__date=day):
                     t.append(mark)
                     if mark.absent:
                         cols[0] = cols.get(0, 0) + 1

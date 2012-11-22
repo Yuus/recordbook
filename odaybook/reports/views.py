@@ -448,6 +448,8 @@ def view_marks(request, id):
                                                   date__gte = start,
                                                   date__lte = end,
                                                   attendance__subject = subject)
+    else:
+        render["lessons"] = []
 
     for lesson in render['lessons']:
         if Mark.objects.filter(pupil = pupil, lesson = lesson):
