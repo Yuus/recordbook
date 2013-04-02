@@ -17,6 +17,8 @@ urlpatterns = patterns('',
    (r'^admin/(.*)', include(admin.site.urls)),
 
    (r'^accounts/', include('odaybook.userextended.urls')),
+   (r'^billing/', include('odaybook.billing.urls')),
+   (r'^notify/', include('odaybook.notify.urls')),
    (r'^marks/', include('odaybook.marks.urls')),
    (r'^curatorship/', include('odaybook.curatorship.urls')),
    (r'^administrator/', include('odaybook.userextended.urls')),

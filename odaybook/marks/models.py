@@ -2,13 +2,18 @@
 '''
     Работа с оценками.
 '''
-
+from decimal import Decimal
 
 from django.db import models
+
+from odaybook.sms import send_message
 
 from odaybook.attendance.models import UsalTimetable
 
 from odaybook.userextended.models import Pupil, Teacher, Subject, Grade, School
+
+from odaybook.billing.models import Transaction
+
 
 class Lesson(models.Model):
     '''
@@ -79,15 +84,32 @@ class Mark(models.Model):
             return unicode(self.mark)
 
     def save(self, *args, **kwargs):
-        from odaybook.userextended.models import Notify
-        if not self.lesson.fullness:
-            #if self.lesson.topic and Mark.objects.filter(lesson = self.lesson) > 4:
-            if Mark.objects.filter(lesson = self.lesson) > 4:
-                self.lesson.fullness = True
-                self.lesson.save(safe = True)
+        if not self.pk:
+            from odaybook.userextended.models import Notify, Parent
+            if not self.lesson.fullness:
+                #if self.lesson.topic and Mark.objects.filter(lesson = self.lesson) > 4:
+                if Mark.objects.filter(lesson = self.lesson) > 4:
+                    self.lesson.fullness = True
+                    self.lesson.save(safe = True)
+            Notify.objects.filter(user = self.lesson.teacher, type = '1').delete()
+
+            sms_text = "%s, %s(%s.%s): " % (self.pupil.first_name,
+                                            self.lesson.attendance.subject.name,
+                                            str(self.lesson.date.day).rjust(2, "0"),
+                                            str(self.lesson.date.month).rjust(2, "0"),
+                                            )
+            if self.absent:
+                sms_text += u"не был"
+            else:
+                sms_text += u"%d" % self.mark
+            for parent in Parent.objects.filter(pupils=self.pupil):
+                if parent.clerk.phone:
+                    if parent.clerk.account >= Decimal("1"):
+                        Transaction(user=parent.clerk, amount="-1", comment=u"SMS").make_complited()
+                        send_message(parent.clerk.phone, sms_text)
+
         super(Mark, self).save(*args, **kwargs)
-        Notify.objects.filter(user = self.lesson.teacher, type = '1').delete()
-    
+
     class Meta:
         ordering = ['-date']
 

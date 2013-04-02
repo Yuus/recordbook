@@ -16,7 +16,6 @@ from django.contrib import messages
 from odaybook.utils import PlaningError
 from odaybook.userextended.models import Pupil, Subject, Grade
 from odaybook.curatorship.models import Connection
-from odaybook.attendance.models import UsalTimetable
 
 from models import Lesson, Mark, ResultDate
 from forms import LessonForm, StatForm
@@ -185,6 +184,7 @@ def set_mark(request):
         id = int(request.GET.get('lesson', 0)),
         teacher = request.user)
     mark = unicode(request.GET.get('mark', 0)).lower()
+
     Mark.objects.filter(pupil = pupil, lesson = lesson).delete()
     m = Mark(pupil = pupil, lesson = lesson)
     tr_id = 'p-%d-%d' % (pupil.id, lesson.id)

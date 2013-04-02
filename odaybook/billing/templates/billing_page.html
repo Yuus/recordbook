@@ -1,0 +1,6 @@
+{% extends 'page.html' %}
+
+{% block padding %}
+    {% if SM == "history" %}<h1>История пополнений</h1> {% else %}<a href="/billing/history/">История пополнений</a>{% endif %}
+    {% if SM == "pay" %}<h1>Пополнить</h1> {% else %}<a href="/billing/pay/">Пополнить</a>{% endif %}
+{% endblock %}
